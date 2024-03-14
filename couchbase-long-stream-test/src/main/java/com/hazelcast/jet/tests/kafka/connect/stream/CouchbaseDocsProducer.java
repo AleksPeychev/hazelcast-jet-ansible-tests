@@ -24,10 +24,6 @@ import com.couchbase.client.java.manager.bucket.BucketManager;
 import com.couchbase.client.java.manager.bucket.BucketSettings;
 import com.couchbase.client.java.manager.bucket.BucketType;
 import com.hazelcast.logging.ILogger;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import org.bson.Document;
 
 import java.time.Duration;
 
@@ -49,7 +45,8 @@ public class CouchbaseDocsProducer {
     //must add data for infinite time to Couchbase
     //only inserting data need to be adjusted
     public CouchbaseDocsProducer(final String couchbaseConnectionString, final String couchbaseUsername,
-                                 final String couchbasePassword, String bucketName, final String collectionName, ILogger logger) {
+                                 final String couchbasePassword, String bucketName,
+                                 final String collectionName, ILogger logger) {
         this.couchbaseConnectionString = couchbaseConnectionString;
         this.couchbaseUsername = couchbaseUsername;
         this.couchbasePassword = couchbasePassword;
@@ -63,7 +60,7 @@ public class CouchbaseDocsProducer {
         try (Cluster cluster = Cluster.connect(couchbaseConnectionString, couchbaseUsername, couchbasePassword)) {
             BucketManager bucketManager = cluster.buckets();
             BucketSettings bucketSettings = BucketSettings.create(bucketName).bucketType(BucketType.COUCHBASE)
-                                                          .ramQuotaMB(101) // Set the RAM quota for the bucket as a Property
+                                                          .ramQuotaMB(101)
                                                           .numReplicas(0).replicaIndexes(false).flushEnabled(true);
             bucketManager.createBucket(bucketSettings);
 
@@ -81,7 +78,8 @@ public class CouchbaseDocsProducer {
                 sleepMillis(150);
             }
         } finally {
-            logger.info(String.format("Total number of inserted docs into %s collection is %d", collectionName, producedItems));
+            logger.info(String.format("Total number of inserted docs into %s collection is %d", collectionName,
+                    producedItems));
         }
     }
 

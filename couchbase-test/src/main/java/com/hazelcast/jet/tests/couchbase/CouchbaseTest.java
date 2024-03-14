@@ -71,14 +71,13 @@ public class CouchbaseTest
     private static final String STREAM_READ_FROM_PREFIX = CouchbaseTest.class.getSimpleName() + "_streamReadFrom_";
     private static final String STREAM_SINK_LIST_NAME = CouchbaseTest.class.getSimpleName() + "_listSinkStream";
     private static final String BUCKET_NAME = CouchbaseTest.class.getSimpleName();
-    private static Bucket bucket;
+    private Bucket bucket;
     private String couchbaseConnectionString;
     private String couchbaseUsername;
     private String couchbasePwd;
     private int itemCount;
 
     public static void main(final String[] args) throws Exception {
-        setRunLocal();
         new CouchbaseTest().run(args);
     }
 

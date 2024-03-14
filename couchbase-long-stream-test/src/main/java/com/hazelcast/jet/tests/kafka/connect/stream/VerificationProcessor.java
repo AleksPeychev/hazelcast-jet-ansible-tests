@@ -51,8 +51,8 @@ public class VerificationProcessor
     }
 
     static Sink<Long> sink(String name) {
-        return new SinkImpl<>(name, forceTotalParallelismOne(ProcessorSupplier.of(() -> new VerificationProcessor(name)), name),
-                TOTAL_PARALLELISM_ONE);
+        return new SinkImpl<>(name, forceTotalParallelismOne(ProcessorSupplier.of(() ->
+                        new VerificationProcessor(name)), name), TOTAL_PARALLELISM_ONE);
     }
 
     @Override
@@ -88,14 +88,14 @@ public class VerificationProcessor
             try {
                 map.setAsync(name, counter);
             } catch (HazelcastInstanceNotActiveException e) {
-                logger.warning(format("Setting the counter[%s] to %d failed with instance not active exception", name, counter),
-                        e);
+                logger.warning(format("Setting the counter[%s] to %d failed with instance not active exception", name,
+                                counter), e);
             }
         }
         if (queue.size() >= QUEUE_SIZE_LIMIT) {
             throw new AssertionError(format("[%s] Queue size exceeded while waiting for the next "
-                            + "item. Limit=%d, expected next=%d, next in queue: %s, %s, %s, %s, ...", name, QUEUE_SIZE_LIMIT, counter,
-                    queue.poll(), queue.poll(), queue.poll(), queue.poll()));
+                            + "item. Limit=%d, expected next=%d, next in queue: %s, %s, %s, %s, ...", name,
+                    QUEUE_SIZE_LIMIT, counter, queue.poll(), queue.poll(), queue.poll(), queue.poll()));
         }
         return true;
     }
@@ -112,7 +112,8 @@ public class VerificationProcessor
         counter = tuple.f0();
         queue.addAll(tuple.f1());
 
-        logger.info(format("restoreFromSnapshot counter: %d, size: %d, peek: %d", counter, queue.size(), queue.peek()));
+        logger.info(format("restoreFromSnapshot counter: %d, size: %d, peek: %d", counter, queue.size(),
+                queue.peek()));
     }
 
 }

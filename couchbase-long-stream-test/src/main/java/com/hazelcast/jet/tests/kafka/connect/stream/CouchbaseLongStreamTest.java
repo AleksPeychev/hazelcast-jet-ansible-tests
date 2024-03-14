@@ -22,26 +22,22 @@ import com.couchbase.client.java.manager.bucket.BucketSettings;
 import com.couchbase.client.java.manager.collection.CollectionManager;
 import com.couchbase.client.java.manager.collection.CollectionSpec;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.function.SupplierEx;
 import com.hazelcast.jet.Job;
 import com.hazelcast.jet.config.JobConfig;
 import com.hazelcast.jet.json.JsonUtil;
 import com.hazelcast.jet.kafka.connect.KafkaConnectSources;
-import com.hazelcast.jet.mongodb.MongoSources;
-import com.hazelcast.jet.mongodb.impl.MongoUtilities;
 import com.hazelcast.jet.pipeline.Pipeline;
 import com.hazelcast.jet.pipeline.StreamSource;
 import com.hazelcast.jet.tests.common.AbstractSoakTest;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.shaded.com.fasterxml.jackson.jr.ob.impl.DeferredMap;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import org.bson.Document;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.manager.bucket.BucketType;
 
-import java.nio.file.Paths;
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
@@ -51,12 +47,10 @@ import java.util.Properties;
 import static com.hazelcast.jet.config.ProcessingGuarantee.EXACTLY_ONCE;
 import static com.hazelcast.jet.core.JobStatus.FAILED;
 import static com.hazelcast.jet.core.JobStatus.RUNNING;
-import static com.hazelcast.jet.mongodb.ResourceChecks.NEVER;
 import static com.hazelcast.jet.tests.common.Util.getJobStatusWithRetry;
 import static com.hazelcast.jet.tests.common.Util.sleepMillis;
 import static com.hazelcast.jet.tests.common.Util.sleepMinutes;
 import static com.hazelcast.jet.tests.common.Util.sleepSeconds;
-import static java.util.concurrent.TimeUnit.MINUTES;
 
 public class CouchbaseLongStreamTest
         extends AbstractSoakTest {
@@ -71,12 +65,11 @@ public class CouchbaseLongStreamTest
     private String couchbasePassword;
     private int snapshotIntervalMs;
     private int timeoutForNoDataProcessedMin;
-    private static Cluster cluster;
-    private static Bucket bucket;
+    private Cluster cluster;
+    private Bucket bucket;
 
     public static void main(final String[] args)
             throws Exception {
-        setRunLocal();
         new CouchbaseLongStreamTest().run(args);
     }
 
@@ -87,13 +80,18 @@ public class CouchbaseLongStreamTest
         couchbasePassword = "Soak-test,1";
         snapshotIntervalMs = propertyInt("snapshotIntervalMs", DEFAULT_SNAPSHOT_INTERVAL);
         //don`t see it as argument in Ansible tests
-        timeoutForNoDataProcessedMin = propertyInt("timeoutForNoProcessedDataMin", DEFAULT_TIMEOUT_FOR_NO_DATA_PROCESSED_MIN);
+        timeoutForNoDataProcessedMin = propertyInt("timeoutForNoProcessedDataMin",
+                DEFAULT_TIMEOUT_FOR_NO_DATA_PROCESSED_MIN);
         //don`t see here the argument form Ansible tests : remoteClusterYaml={{jet_home}}/config/hazelcast-client.yaml
         cluster = Cluster.connect(couchbaseConnectionString, couchbaseUsername, couchbasePassword);
         BucketManager bucketManager = cluster.buckets();
-        BucketSettings bucketSettings = BucketSettings.create(BUCKET_NAME).bucketType(BucketType.COUCHBASE).ramQuotaMB(
-                                                              propertyInt("couchbaseRamQuotaMb", 2048)) // Set the RAM quota for the bucket as a Property
-                                                      .numReplicas(1).replicaIndexes(true).flushEnabled(false);
+        // RAM quota for the bucket is mandatory set it to 6GB as c5.xlarge instance has 8GB
+        BucketSettings bucketSettings = BucketSettings.create(BUCKET_NAME)
+                                                      .bucketType(BucketType.COUCHBASE)
+                                                      .ramQuotaMB(propertyInt("couchbaseRamQuotaMb", 2048))
+                                                      .numReplicas(1)
+                                                      .replicaIndexes(true)
+                                                      .flushEnabled(false);
         bucketManager.createBucket(bucketSettings);
 
         bucket = cluster.bucket(BUCKET_NAME);
@@ -124,7 +122,6 @@ public class CouchbaseLongStreamTest
                      .writeTo(VerificationProcessor.sink(clusterName));
 
         //add the classes and coucnhbase client jar
-        //take care of couchbase-kafka-connect-couchbase-4.1.11.zip
         final JobConfig jobConfig = new JobConfig();
 
         if (clusterName.startsWith(DYNAMIC_CLUSTER)) {
@@ -132,7 +129,7 @@ public class CouchbaseLongStreamTest
             jobConfig.setProcessingGuarantee(EXACTLY_ONCE);
         } else {
             jobConfig.addClass(TestUtil.class, com.fasterxml.jackson.core.JsonFactory.class)
-                     .addJarsInZip(Paths.get("/Users/apeychev/proj/couchbase-kafka-connect-couchbase-4.1.11.zip").toFile());
+                     .addJarsInZip(getCouchbaseConnectorURL());
         }
 
         jobConfig.setName(clusterName + "_" + BUCKET_NAME);
@@ -157,7 +154,8 @@ public class CouchbaseLongStreamTest
 
                     if (processedDocs == lastlyProcessed) {
                         noNewDocsCounter++;
-                        log(logger, "Nothing was processed in last minute, current counter:" + processedDocs, clusterName);
+                        log(logger, "Nothing was processed in last minute, current counter:" + processedDocs,
+                                clusterName);
                         if (noNewDocsCounter > timeoutForNoDataProcessedMin) {
                             throw new AssertionError("Failed. Exceeded timeout for no data processed");
                         }
@@ -189,7 +187,8 @@ public class CouchbaseLongStreamTest
             }
         }
         throw new AssertionError(
-                "Job " + job.getName() + " does not have expected status: " + RUNNING + ". Job status: " + job.getStatus());
+                "Job " + job.getName() + " does not have expected status: " + RUNNING + ". Job status: "
+                        + job.getStatus());
     }
 
     private static long getNumberOfProcessedDocs(final HazelcastInstance client, final String clusterName) {
@@ -241,6 +240,16 @@ public class CouchbaseLongStreamTest
         properties.setProperty("couchbase.source.handler",
                 "com.couchbase.connect.kafka.handler.source.RawJsonWithMetadataSourceHandler");
         return KafkaConnectSources.connect(properties, TestUtil::convertToString);
+    }
+
+    private URL getCouchbaseConnectorURL()
+            throws URISyntaxException {
+        ClassLoader classLoader = getClass().getClassLoader();
+        final String connectorFilePath = "couchbase-kafka-connect-couchbase-4.1.11.zip";
+        URL resource = classLoader.getResource(connectorFilePath);
+        assert resource != null;
+        assertTrue(new File(resource.toURI()).exists());
+        return resource;
     }
 
     @Override
