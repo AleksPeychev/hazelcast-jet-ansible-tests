@@ -41,7 +41,9 @@ import com.hazelcast.jet.pipeline.StreamSource;
 import com.hazelcast.jet.tests.common.AbstractSoakTest;
 import com.hazelcast.shaded.com.fasterxml.jackson.jr.ob.impl.DeferredMap;
 
-import java.nio.file.Paths;
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.Properties;
@@ -92,10 +94,12 @@ public class CouchbaseTest
                 clusterOptions(couchbaseUsername, couchbasePwd).environment(environment));
         itemCount = propertyInt("itemCount", DEFAULT_ITEM_COUNT);
 
+        // RAM quota for the bucket is mandatory set it to 6GB as c5.xlarge instance has 8GB
         BucketManager bucketManager = cluster.buckets();
-        BucketSettings bucketSettings = BucketSettings.create(BUCKET_NAME).bucketType(BucketType.COUCHBASE)
-                                                      // RAM quota for the bucket is mandatory set it to 6GB as c5.xlarge instance has 8GB
-                                                      .ramQuotaMB(propertyInt("couchbaseRamQuotaMb", 2048)).numReplicas(0)
+        BucketSettings bucketSettings = BucketSettings.create(BUCKET_NAME)
+                                                      .bucketType(BucketType.COUCHBASE)
+                                                      .ramQuotaMB(propertyInt("couchbaseRamQuotaMb", 2048))
+                                                      .numReplicas(0)
                                                       .replicaIndexes(false).flushEnabled(true);
         bucketManager.createBucket(bucketSettings);
 
@@ -104,7 +108,8 @@ public class CouchbaseTest
     }
 
     @Override
-    public void test(final HazelcastInstance client, final String name) {
+    public void test(final HazelcastInstance client, final String name)
+            throws URISyntaxException {
         clearSinks(client);
         int jobCounter = 0;
         final long begin = System.currentTimeMillis();
@@ -158,7 +163,8 @@ public class CouchbaseTest
             }
         }
         throw new AssertionError(
-                "Job " + job.getName() + " does not have expected status: " + RUNNING + ". Job status: " + job.getStatus());
+                "Job " + job.getName() + " does not have expected status: " + RUNNING + ". Job status: "
+                        + job.getStatus());
     }
 
     private void deleteCollectionAndCreateNewOne(final int collectionCounter) {
@@ -175,7 +181,8 @@ public class CouchbaseTest
         collectionMgr.createCollection(CollectionSpec.create(COLLECTION_PREFIX + collectionCounter));
     }
 
-    private void startStreamReadFromCouchbasePipeline(final HazelcastInstance client, final int collectionCounter) {
+    private void startStreamReadFromCouchbasePipeline(final HazelcastInstance client, final int collectionCounter)
+            throws URISyntaxException {
         final StreamSource<String> couchbaseSource = streamSource(collectionCounter);
         final Pipeline fromCouchbase = Pipeline.create();
         fromCouchbase.readFrom(couchbaseSource).withoutTimestamps().setLocalParallelism(1)
@@ -184,9 +191,7 @@ public class CouchbaseTest
                      .writeTo(Sinks.list(STREAM_SINK_LIST_NAME));
 
         final JobConfig jobConfig = new JobConfig().addClass(TestUtil.class, com.fasterxml.jackson.core.JsonFactory.class)
-                                                   .addJarsInZip(Paths.get(
-                                                                              "/Users/apeychev/proj/couchbase-kafka-connect-couchbase-4.1.11.zip")
-                                                                      .toFile());
+                                                   .addJarsInZip(getCouchbaseConnectorURL());
         jobConfig.setName(STREAM_READ_FROM_PREFIX + collectionCounter);
         final Job job = client.getJet().newJob(fromCouchbase, jobConfig);
         assertJobStatusEventually(job);
@@ -252,5 +257,14 @@ public class CouchbaseTest
         Collection collection = bucket.collection(COLLECTION_PREFIX + collectionCounter);
         collection.insert(String.valueOf(index),
                 JsonObject.create().put("docId", DOC_PREFIX + collectionCounter + DOC_COUNTER_PREFIX + index));
+    }
+
+    private URL getCouchbaseConnectorURL() throws URISyntaxException {
+        ClassLoader classLoader = getClass().getClassLoader();
+        final String connectoreFilePath = "couchbase-kafka-connect-couchbase-4.1.11.zip";
+        URL resource = classLoader.getResource(connectoreFilePath);
+        assert resource != null;
+        assertTrue(new File(resource.toURI()).exists());
+        return resource;
     }
 }

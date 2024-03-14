@@ -96,6 +96,26 @@
                     <propertyExpansion>main.basedir=${main.basedir}</propertyExpansion>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>1.8.1</version>
+                <executions>
+                    <execution>
+                        <id>download-couchbase-zip-file</id>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>
+                                https://repository.hazelcast.com/download/tests/couchbase-kafka-connect-couchbase-4.1.11.zip
+                            </url>
+                            <unpack>false</unpack>
+                            <outputDirectory>${project.build.directory}/test-classes</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <repositories>
