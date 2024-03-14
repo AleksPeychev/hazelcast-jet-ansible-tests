@@ -54,7 +54,8 @@ import static com.hazelcast.jet.core.JobStatus.RUNNING;
 import static com.hazelcast.jet.tests.common.Util.sleepMillis;
 import static com.hazelcast.jet.tests.common.Util.sleepSeconds;
 
-public class CouchbaseTest extends AbstractSoakTest {
+public class CouchbaseTest
+        extends AbstractSoakTest {
     private static final int DEFAULT_ITEM_COUNT = 10;
     private static final int LOG_JOB_COUNT_THRESHOLD = 50;
     private static final int SLEEP_BETWEEN_READS_SECONDS = 2;
@@ -84,18 +85,18 @@ public class CouchbaseTest extends AbstractSoakTest {
         couchbaseConnectionString = "couchbase://" + property("couchbaseIp", "127.0.0.1") + ":11210";
         couchbaseUsername = "Administrator";
         couchbasePwd = "Soak-test,1";
-        ClusterEnvironment environment = ClusterEnvironment.builder().retryStrategy(BestEffortRetryStrategy.INSTANCE).timeoutConfig(TimeoutConfig.kvTimeout(Duration.ofMillis(2500))).build();
-        Cluster cluster = Cluster.connect(couchbaseConnectionString, clusterOptions(couchbaseUsername, couchbasePwd).environment(environment));
+        ClusterEnvironment environment = ClusterEnvironment.builder().retryStrategy(BestEffortRetryStrategy.INSTANCE)
+                                                           .timeoutConfig(TimeoutConfig.kvTimeout(Duration.ofMillis(2500)))
+                                                           .build();
+        Cluster cluster = Cluster.connect(couchbaseConnectionString,
+                clusterOptions(couchbaseUsername, couchbasePwd).environment(environment));
         itemCount = propertyInt("itemCount", DEFAULT_ITEM_COUNT);
 
         BucketManager bucketManager = cluster.buckets();
-        BucketSettings bucketSettings = BucketSettings.create(BUCKET_NAME)
-                .bucketType(BucketType.COUCHBASE)
-                // RAM quota for the bucket is mandatory set it to 6GB as c5.xlarge instance has 8GB
-                .ramQuotaMB(propertyInt("couchbaseRamQuotaMb", 2048))
-                .numReplicas(0)
-                .replicaIndexes(false)
-                .flushEnabled(true);
+        BucketSettings bucketSettings = BucketSettings.create(BUCKET_NAME).bucketType(BucketType.COUCHBASE)
+                                                      // RAM quota for the bucket is mandatory set it to 6GB as c5.xlarge instance has 8GB
+                                                      .ramQuotaMB(propertyInt("couchbaseRamQuotaMb", 2048)).numReplicas(0)
+                                                      .replicaIndexes(false).flushEnabled(true);
         bucketManager.createBucket(bucketSettings);
 
         bucket = cluster.bucket(BUCKET_NAME);
@@ -156,8 +157,8 @@ public class CouchbaseTest extends AbstractSoakTest {
                 sleepMillis(JOB_STATUS_ASSERTION_SLEEP_MS);
             }
         }
-        throw new AssertionError("Job " + job.getName() + " does not have expected status: " + RUNNING
-                + ". Job status: " + job.getStatus());
+        throw new AssertionError(
+                "Job " + job.getName() + " does not have expected status: " + RUNNING + ". Job status: " + job.getStatus());
     }
 
     private void deleteCollectionAndCreateNewOne(final int collectionCounter) {
@@ -177,15 +178,15 @@ public class CouchbaseTest extends AbstractSoakTest {
     private void startStreamReadFromCouchbasePipeline(final HazelcastInstance client, final int collectionCounter) {
         final StreamSource<String> couchbaseSource = streamSource(collectionCounter);
         final Pipeline fromCouchbase = Pipeline.create();
-        fromCouchbase.readFrom(couchbaseSource)
-                .withoutTimestamps()
-                .setLocalParallelism(1)
-                .map(base64 -> Base64.getDecoder().decode(base64))
-                .map(JsonUtil::mapFrom)
-                .map(entry -> ((DeferredMap) entry.get("content")).get("docId").toString())
-                .writeTo(Sinks.list(STREAM_SINK_LIST_NAME));
+        fromCouchbase.readFrom(couchbaseSource).withoutTimestamps().setLocalParallelism(1)
+                     .map(base64 -> Base64.getDecoder().decode(base64)).map(JsonUtil::mapFrom)
+                     .map(entry -> ((DeferredMap) entry.get("content")).get("docId").toString())
+                     .writeTo(Sinks.list(STREAM_SINK_LIST_NAME));
 
-        final JobConfig jobConfig = new JobConfig().addClass(TestUtil.class, com.fasterxml.jackson.core.JsonFactory.class).addJarsInZip(Paths.get("/Users/apeychev/proj/couchbase-kafka-connect-couchbase-4.1.11.zip").toFile());
+        final JobConfig jobConfig = new JobConfig().addClass(TestUtil.class, com.fasterxml.jackson.core.JsonFactory.class)
+                                                   .addJarsInZip(Paths.get(
+                                                                              "/Users/apeychev/proj/couchbase-kafka-connect-couchbase-4.1.11.zip")
+                                                                      .toFile());
         jobConfig.setName(STREAM_READ_FROM_PREFIX + collectionCounter);
         final Job job = client.getJet().newJob(fromCouchbase, jobConfig);
         assertJobStatusEventually(job);
@@ -222,7 +223,7 @@ public class CouchbaseTest extends AbstractSoakTest {
         final Set<String> set = new HashSet<>();
         final String expected = DOC_PREFIX + collectionCounter + DOC_COUNTER_PREFIX;
         for (final String item : list) {
-            assertTrue(  "List does not contain expected part: " + item, item.contains(expected));
+            assertTrue("List does not contain expected part: " + item, item.contains(expected));
             set.add(item);
         }
 
@@ -242,15 +243,14 @@ public class CouchbaseTest extends AbstractSoakTest {
     }
 
     private void createNumberOfRecords(int collectionCounter, int expectedSize) {
-        IntStream.range(0, expectedSize)
-                .forEach(value -> {
-                    createOneRecord(collectionCounter, value);
-                });
+        IntStream.range(0, expectedSize).forEach(value -> {
+            createOneRecord(collectionCounter, value);
+        });
     }
 
     public void createOneRecord(int collectionCounter, long index) {
         Collection collection = bucket.collection(COLLECTION_PREFIX + collectionCounter);
-        collection.insert(String.valueOf(index), JsonObject.create()
-                .put("docId", DOC_PREFIX + collectionCounter + DOC_COUNTER_PREFIX + index));
+        collection.insert(String.valueOf(index),
+                JsonObject.create().put("docId", DOC_PREFIX + collectionCounter + DOC_COUNTER_PREFIX + index));
     }
 }

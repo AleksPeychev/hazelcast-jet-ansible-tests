@@ -58,7 +58,8 @@ import static com.hazelcast.jet.tests.common.Util.sleepMinutes;
 import static com.hazelcast.jet.tests.common.Util.sleepSeconds;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
-public class CouchbaseLongStreamTest extends AbstractSoakTest {
+public class CouchbaseLongStreamTest
+        extends AbstractSoakTest {
     private static final int ASSERTION_RETRY_COUNT = 60;
     private static final int DEFAULT_SNAPSHOT_INTERVAL = 5000;
     private static final int DEFAULT_TIMEOUT_FOR_NO_DATA_PROCESSED_MIN = 5;
@@ -73,7 +74,8 @@ public class CouchbaseLongStreamTest extends AbstractSoakTest {
     private static Cluster cluster;
     private static Bucket bucket;
 
-    public static void main(final String[] args) throws Exception {
+    public static void main(final String[] args)
+            throws Exception {
         setRunLocal();
         new CouchbaseLongStreamTest().run(args);
     }
@@ -85,17 +87,13 @@ public class CouchbaseLongStreamTest extends AbstractSoakTest {
         couchbasePassword = "Soak-test,1";
         snapshotIntervalMs = propertyInt("snapshotIntervalMs", DEFAULT_SNAPSHOT_INTERVAL);
         //don`t see it as argument in Ansible tests
-        timeoutForNoDataProcessedMin = propertyInt("timeoutForNoProcessedDataMin",
-                DEFAULT_TIMEOUT_FOR_NO_DATA_PROCESSED_MIN);
+        timeoutForNoDataProcessedMin = propertyInt("timeoutForNoProcessedDataMin", DEFAULT_TIMEOUT_FOR_NO_DATA_PROCESSED_MIN);
         //don`t see here the argument form Ansible tests : remoteClusterYaml={{jet_home}}/config/hazelcast-client.yaml
         cluster = Cluster.connect(couchbaseConnectionString, couchbaseUsername, couchbasePassword);
         BucketManager bucketManager = cluster.buckets();
-        BucketSettings bucketSettings = BucketSettings.create(BUCKET_NAME)
-                .bucketType(BucketType.COUCHBASE)
-                .ramQuotaMB(propertyInt("couchbaseRamQuotaMb", 2048)) // Set the RAM quota for the bucket as a Property
-                .numReplicas(1)
-                .replicaIndexes(true)
-                .flushEnabled(false);
+        BucketSettings bucketSettings = BucketSettings.create(BUCKET_NAME).bucketType(BucketType.COUCHBASE).ramQuotaMB(
+                                                              propertyInt("couchbaseRamQuotaMb", 2048)) // Set the RAM quota for the bucket as a Property
+                                                      .numReplicas(1).replicaIndexes(true).flushEnabled(false);
         bucketManager.createBucket(bucketSettings);
 
         bucket = cluster.bucket(BUCKET_NAME);
@@ -111,7 +109,8 @@ public class CouchbaseLongStreamTest extends AbstractSoakTest {
     //one new bucket for both clusters and not use _default and each cluster should use different collection
     //database is bucket(test name couchbaselongstreamtest) and collection can be cluster name
     @Override
-    public void test(final HazelcastInstance client, final String clusterName) throws Exception {
+    public void test(final HazelcastInstance client, final String clusterName)
+            throws Exception {
         final long begin = System.currentTimeMillis();
 
         deleteCollectionAndCreateNewOne(clusterName);
@@ -120,12 +119,9 @@ public class CouchbaseLongStreamTest extends AbstractSoakTest {
 
         //map object to long, because verification processor needs long
         final Pipeline fromCouchbase = Pipeline.create();
-        fromCouchbase.readFrom(couchbaseSource)
-                .withoutTimestamps()
-                .map(base64 -> Base64.getDecoder().decode(base64))
-                .map(JsonUtil::mapFrom)
-                .map(entry -> (Long)((DeferredMap) entry.get("content")).get("docId"))
-                .writeTo(VerificationProcessor.sink(clusterName));
+        fromCouchbase.readFrom(couchbaseSource).withoutTimestamps().map(base64 -> Base64.getDecoder().decode(base64))
+                     .map(JsonUtil::mapFrom).map(entry -> (Long) ((DeferredMap) entry.get("content")).get("docId"))
+                     .writeTo(VerificationProcessor.sink(clusterName));
 
         //add the classes and coucnhbase client jar
         //take care of couchbase-kafka-connect-couchbase-4.1.11.zip
@@ -135,7 +131,8 @@ public class CouchbaseLongStreamTest extends AbstractSoakTest {
             jobConfig.setSnapshotIntervalMillis(snapshotIntervalMs);
             jobConfig.setProcessingGuarantee(EXACTLY_ONCE);
         } else {
-            jobConfig.addClass(TestUtil.class, com.fasterxml.jackson.core.JsonFactory.class).addJarsInZip(Paths.get("/Users/apeychev/proj/couchbase-kafka-connect-couchbase-4.1.11.zip").toFile());
+            jobConfig.addClass(TestUtil.class, com.fasterxml.jackson.core.JsonFactory.class)
+                     .addJarsInZip(Paths.get("/Users/apeychev/proj/couchbase-kafka-connect-couchbase-4.1.11.zip").toFile());
         }
 
         jobConfig.setName(clusterName + "_" + BUCKET_NAME);
@@ -143,10 +140,8 @@ public class CouchbaseLongStreamTest extends AbstractSoakTest {
         final Job job = client.getJet().newJob(fromCouchbase, jobConfig);
         assertJobStatusEventually(job);
 
-        final CouchbaseDocsProducer producer = new CouchbaseDocsProducer(couchbaseConnectionString, couchbaseUsername, couchbasePassword,
-                BUCKET_NAME,
-                clusterName,
-                logger);
+        final CouchbaseDocsProducer producer = new CouchbaseDocsProducer(couchbaseConnectionString, couchbaseUsername,
+                couchbasePassword, BUCKET_NAME, clusterName, logger);
         producer.start();
 
         final long expectedTotalCount;
@@ -162,8 +157,7 @@ public class CouchbaseLongStreamTest extends AbstractSoakTest {
 
                     if (processedDocs == lastlyProcessed) {
                         noNewDocsCounter++;
-                        log(logger, "Nothing was processed in last minute, current counter:"
-                                + processedDocs, clusterName);
+                        log(logger, "Nothing was processed in last minute, current counter:" + processedDocs, clusterName);
                         if (noNewDocsCounter > timeoutForNoDataProcessedMin) {
                             throw new AssertionError("Failed. Exceeded timeout for no data processed");
                         }
@@ -194,8 +188,8 @@ public class CouchbaseLongStreamTest extends AbstractSoakTest {
                 sleepMillis(ASSERTION_SLEEP_MS);
             }
         }
-        throw new AssertionError("Job " + job.getName() + " does not have expected status: " + RUNNING
-                + ". Job status: " + job.getStatus());
+        throw new AssertionError(
+                "Job " + job.getName() + " does not have expected status: " + RUNNING + ". Job status: " + job.getStatus());
     }
 
     private static long getNumberOfProcessedDocs(final HazelcastInstance client, final String clusterName) {

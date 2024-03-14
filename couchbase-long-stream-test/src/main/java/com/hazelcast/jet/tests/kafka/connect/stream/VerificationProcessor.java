@@ -32,7 +32,8 @@ import static com.hazelcast.jet.datamodel.Tuple2.tuple2;
 import static com.hazelcast.jet.impl.pipeline.SinkImpl.Type.TOTAL_PARALLELISM_ONE;
 import static java.lang.String.format;
 
-public class VerificationProcessor extends AbstractProcessor {
+public class VerificationProcessor
+        extends AbstractProcessor {
 
     //just rename
     public static final String CONSUMED_DOCS_MAP_NAME = "CouchbaseLongStreamTest_latestCounter";
@@ -50,8 +51,7 @@ public class VerificationProcessor extends AbstractProcessor {
     }
 
     static Sink<Long> sink(String name) {
-        return new SinkImpl<>(name,
-                forceTotalParallelismOne(ProcessorSupplier.of(() -> new VerificationProcessor(name)), name),
+        return new SinkImpl<>(name, forceTotalParallelismOne(ProcessorSupplier.of(() -> new VerificationProcessor(name)), name),
                 TOTAL_PARALLELISM_ONE);
     }
 
@@ -88,22 +88,21 @@ public class VerificationProcessor extends AbstractProcessor {
             try {
                 map.setAsync(name, counter);
             } catch (HazelcastInstanceNotActiveException e) {
-                logger.warning(format("Setting the counter[%s] to %d failed with instance not active exception",
-                        name, counter), e);
+                logger.warning(format("Setting the counter[%s] to %d failed with instance not active exception", name, counter),
+                        e);
             }
         }
         if (queue.size() >= QUEUE_SIZE_LIMIT) {
             throw new AssertionError(format("[%s] Queue size exceeded while waiting for the next "
-                            + "item. Limit=%d, expected next=%d, next in queue: %s, %s, %s, %s, ...",
-                    name, QUEUE_SIZE_LIMIT, counter, queue.poll(), queue.poll(), queue.poll(), queue.poll()));
+                            + "item. Limit=%d, expected next=%d, next in queue: %s, %s, %s, %s, ...", name, QUEUE_SIZE_LIMIT, counter,
+                    queue.poll(), queue.poll(), queue.poll(), queue.poll()));
         }
         return true;
     }
 
     @Override
     public boolean saveToSnapshot() {
-        logger.info(format("saveToSnapshot counter: %d, size: %d, peek: %d",
-                counter, queue.size(), queue.peek()));
+        logger.info(format("saveToSnapshot counter: %d, size: %d, peek: %d", counter, queue.size(), queue.peek()));
         return tryEmitToSnapshot(name, tuple2(counter, queue));
     }
 
@@ -113,8 +112,7 @@ public class VerificationProcessor extends AbstractProcessor {
         counter = tuple.f0();
         queue.addAll(tuple.f1());
 
-        logger.info(format("restoreFromSnapshot counter: %d, size: %d, peek: %d",
-                counter, queue.size(), queue.peek()));
+        logger.info(format("restoreFromSnapshot counter: %d, size: %d, peek: %d", counter, queue.size(), queue.peek()));
     }
 
 }

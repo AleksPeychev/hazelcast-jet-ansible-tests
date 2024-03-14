@@ -46,10 +46,10 @@ public class CouchbaseDocsProducer {
     private volatile boolean running = true;
     private volatile long producedItems;
 
-
     //must add data for infinite time to Couchbase
     //only inserting data need to be adjusted
-    public CouchbaseDocsProducer(final String couchbaseConnectionString, final String couchbaseUsername, final String couchbasePassword, String bucketName, final String collectionName, ILogger logger) {
+    public CouchbaseDocsProducer(final String couchbaseConnectionString, final String couchbaseUsername,
+                                 final String couchbasePassword, String bucketName, final String collectionName, ILogger logger) {
         this.couchbaseConnectionString = couchbaseConnectionString;
         this.couchbaseUsername = couchbaseUsername;
         this.couchbasePassword = couchbasePassword;
@@ -62,12 +62,9 @@ public class CouchbaseDocsProducer {
     private void run() {
         try (Cluster cluster = Cluster.connect(couchbaseConnectionString, couchbaseUsername, couchbasePassword)) {
             BucketManager bucketManager = cluster.buckets();
-            BucketSettings bucketSettings = BucketSettings.create(bucketName)
-                    .bucketType(BucketType.COUCHBASE)
-                    .ramQuotaMB(101) // Set the RAM quota for the bucket as a Property
-                    .numReplicas(0)
-                    .replicaIndexes(false)
-                    .flushEnabled(true);
+            BucketSettings bucketSettings = BucketSettings.create(bucketName).bucketType(BucketType.COUCHBASE)
+                                                          .ramQuotaMB(101) // Set the RAM quota for the bucket as a Property
+                                                          .numReplicas(0).replicaIndexes(false).flushEnabled(true);
             bucketManager.createBucket(bucketSettings);
 
             Bucket bucket = cluster.bucket(bucketName);
@@ -75,8 +72,7 @@ public class CouchbaseDocsProducer {
             Collection collection = bucket.collection(collectionName);
             long id = 0;
             while (running) {
-                collection.insert(String.valueOf(id), JsonObject.create()
-                        .put("docId", id++));
+                collection.insert(String.valueOf(id), JsonObject.create().put("docId", id++));
                 producedItems = id;
 
                 if (id % PRINT_LOG_INSERT_ITEMS == 0) {
@@ -85,9 +81,7 @@ public class CouchbaseDocsProducer {
                 sleepMillis(150);
             }
         } finally {
-            logger.info(String.format("Total number of inserted docs into %s collection is %d",
-                    collectionName,
-                    producedItems));
+            logger.info(String.format("Total number of inserted docs into %s collection is %d", collectionName, producedItems));
         }
     }
 
@@ -95,7 +89,8 @@ public class CouchbaseDocsProducer {
         producerThread.start();
     }
 
-    public long stop() throws InterruptedException {
+    public long stop()
+            throws InterruptedException {
         running = false;
         producerThread.join();
         return producedItems;
