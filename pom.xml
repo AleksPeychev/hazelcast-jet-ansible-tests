@@ -19,6 +19,7 @@
         <jdk.version>11</jdk.version>
         <hazelcast.version>5.4.0-SNAPSHOT</hazelcast.version>
         <mysql.version>8.0.29</mysql.version>
+
         <mongodb.version>4.8.1</mongodb.version>
         <main.basedir>${project.basedir}</main.basedir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -130,6 +131,8 @@
                 <module>cdc-sink-test</module>
                 <module>cdc-source-test</module>
                 <module>cooperative-map-cache-source-test</module>
+                <module>couchbase-test</module>
+                <module>couchbase-long-stream-test</module>
                 <module>early-results-test</module>
                 <module>elastic-test</module>
                 <module>event-journal-test</module>
@@ -181,6 +184,8 @@
                 <module>cdc-sink-test</module>
                 <module>cdc-source-test</module>
                 <module>cooperative-map-cache-source-test</module>
+                <module>couchbase-test</module>
+                <module>couchbase-long-stream-test</module>
                 <module>early-results-test</module>
                 <module>elastic-test</module>
                 <module>event-journal-test</module>
