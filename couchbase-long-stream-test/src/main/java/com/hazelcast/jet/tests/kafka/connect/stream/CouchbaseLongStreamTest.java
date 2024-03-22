@@ -36,6 +36,7 @@ import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.manager.bucket.BucketType;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Base64;
@@ -60,6 +61,8 @@ public class CouchbaseLongStreamTest
     private static final int ASSERTION_ATTEMPTS = 1200;
     private static final int ASSERTION_SLEEP_MS = 100;
     private static final String BUCKET_NAME = CouchbaseLongStreamTest.class.getSimpleName();
+    private static final String CONNECTOR_URL = "https://repository.hazelcast.com/download"
+            + "/tests/couchbase-kafka-connect-couchbase-4.1.11.zip";
     private String couchbaseConnectionString;
     private String couchbaseUsername;
     private String couchbasePassword;
@@ -242,14 +245,12 @@ public class CouchbaseLongStreamTest
         return KafkaConnectSources.connect(properties, TestUtil::convertToString);
     }
 
-    private URL getCouchbaseConnectorURL()
-            throws URISyntaxException {
-        ClassLoader classLoader = getClass().getClassLoader();
-        final String connectorFilePath = "couchbase-kafka-connect-couchbase-4.1.11.zip";
-        URL resource = classLoader.getResource(connectorFilePath);
-        assert resource != null;
-        assertTrue(new File(resource.toURI()).exists());
-        return resource;
+    private URL getCouchbaseConnectorURL() {
+        try {
+            return new URL(CONNECTOR_URL);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     @Override

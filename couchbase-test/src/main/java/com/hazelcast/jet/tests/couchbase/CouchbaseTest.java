@@ -42,6 +42,7 @@ import com.hazelcast.jet.tests.common.AbstractSoakTest;
 import com.hazelcast.shaded.com.fasterxml.jackson.jr.ob.impl.DeferredMap;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
@@ -71,6 +72,8 @@ public class CouchbaseTest
     private static final String STREAM_READ_FROM_PREFIX = CouchbaseTest.class.getSimpleName() + "_streamReadFrom_";
     private static final String STREAM_SINK_LIST_NAME = CouchbaseTest.class.getSimpleName() + "_listSinkStream";
     private static final String BUCKET_NAME = CouchbaseTest.class.getSimpleName();
+    private static final String CONNECTOR_URL = "https://repository.hazelcast.com/download"
+            + "/tests/couchbase-kafka-connect-couchbase-4.1.11.zip";
     private Bucket bucket;
     private String couchbaseConnectionString;
     private String couchbaseUsername;
@@ -258,12 +261,11 @@ public class CouchbaseTest
                 JsonObject.create().put("docId", DOC_PREFIX + collectionCounter + DOC_COUNTER_PREFIX + index));
     }
 
-    private URL getCouchbaseConnectorURL() throws URISyntaxException {
-        ClassLoader classLoader = getClass().getClassLoader();
-        final String connectoreFilePath = "couchbase-kafka-connect-couchbase-4.1.11.zip";
-        URL resource = classLoader.getResource(connectoreFilePath);
-        assert resource != null;
-        assertTrue(new File(resource.toURI()).exists());
-        return resource;
+    private URL getCouchbaseConnectorURL() {
+        try {
+            return new URL(CONNECTOR_URL);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 }
