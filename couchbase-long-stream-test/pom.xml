@@ -64,6 +64,9 @@
                                 <includes>
                                     <include>com.hazelcast.jet.tests:*</include>
                                     <include>com.hazelcast.jet.tests.kafka.connect.stream:*</include>
+                                    <include>com.couchbase.client:java-client</include>
+                                    <include>com.fasterxml.jackson.core:jackson-core</include>
+                                    <include>com.hazelcast.jet:hazelcast-jet-kafka-connect</include>
                                 </includes>
                             </artifactSet>
                         </configuration>
@@ -99,11 +102,6 @@
             <groupId>com.hazelcast.jet</groupId>
             <artifactId>hazelcast-jet-mongodb</artifactId>
             <version>${hazelcast.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-sync</artifactId>
-            <version>${mongodb.version}</version>
         </dependency>
     </dependencies>
 </project>
