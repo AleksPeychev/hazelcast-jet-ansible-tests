@@ -70,7 +70,7 @@ public class CouchbaseTest
     private static final String DOC_COUNTER_PREFIX = "-counter-";
     private static final String STREAM_READ_FROM_PREFIX = CouchbaseTest.class.getSimpleName() + "_streamReadFrom_";
     private static final String STREAM_SINK_LIST_NAME = CouchbaseTest.class.getSimpleName() + "_listSinkStream";
-    private static final String BUCKET_NAME = CouchbaseTest.class.getSimpleName();
+    private static final String BUCKET_NAME = CouchbaseTest.class.getSimpleName() + 2;
     private static final String CONNECTOR_URL = "https://repository.hazelcast.com/download"
             + "/tests/couchbase-kafka-connect-couchbase-4.1.11.zip";
     private Bucket bucket;
@@ -85,6 +85,7 @@ public class CouchbaseTest
 
     @Override
     public void init(final HazelcastInstance client) {
+        //delete bucket
         couchbaseConnectionString = "couchbase://" + property("couchbaseIp", "127.0.0.1") + ":11210";
         couchbaseUsername = "Administrator";
         couchbasePwd = "Soak-test,1";
@@ -99,9 +100,9 @@ public class CouchbaseTest
         BucketManager bucketManager = cluster.buckets();
         BucketSettings bucketSettings = BucketSettings.create(BUCKET_NAME)
                                                       .bucketType(BucketType.COUCHBASE)
-                                                      .ramQuotaMB(propertyInt("couchbaseRamQuotaMb", 1024))
+                                                      .ramQuotaMB(propertyInt("couchbaseRamQuotaMb", 2048))
                                                       .numReplicas(0)
-                                                      .replicaIndexes(false).flushEnabled(true).maxExpiry(Duration.ZERO);
+                                                      .replicaIndexes(false).flushEnabled(true);
         bucketManager.createBucket(bucketSettings);
 
         bucket = cluster.bucket(BUCKET_NAME);
@@ -179,7 +180,7 @@ public class CouchbaseTest
             System.err.println("Error deleting collection: " + e.getMessage());
         }
 
-        collectionMgr.createCollection(CollectionSpec.create(COLLECTION_PREFIX + collectionCounter, Duration.ZERO));
+        collectionMgr.createCollection(CollectionSpec.create(COLLECTION_PREFIX + collectionCounter));
     }
 
     private void startStreamReadFromCouchbasePipeline(final HazelcastInstance client, final int collectionCounter)
