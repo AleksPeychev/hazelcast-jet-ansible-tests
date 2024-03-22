@@ -29,6 +29,7 @@ import com.couchbase.client.java.manager.bucket.BucketType;
 import com.couchbase.client.java.manager.collection.CollectionManager;
 import com.couchbase.client.java.manager.collection.CollectionSpec;
 import com.couchbase.client.java.env.ClusterEnvironment;
+import com.couchbase.client.java.manager.collection.CreateCollectionOptions;
 import com.hazelcast.collection.IList;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.jet.Job;
@@ -101,7 +102,7 @@ public class CouchbaseTest
                                                       .bucketType(BucketType.COUCHBASE)
                                                       .ramQuotaMB(propertyInt("couchbaseRamQuotaMb", 2048))
                                                       .numReplicas(0)
-                                                      .replicaIndexes(false).flushEnabled(true);
+                                                      .replicaIndexes(false).flushEnabled(true).maxExpiry(Duration.ZERO);
         bucketManager.createBucket(bucketSettings);
 
         bucket = cluster.bucket(BUCKET_NAME);
@@ -179,7 +180,7 @@ public class CouchbaseTest
             System.err.println("Error deleting collection: " + e.getMessage());
         }
 
-        collectionMgr.createCollection(CollectionSpec.create(COLLECTION_PREFIX + collectionCounter));
+        collectionMgr.createCollection(CollectionSpec.create(COLLECTION_PREFIX + collectionCounter, Duration.ZERO));
     }
 
     private void startStreamReadFromCouchbasePipeline(final HazelcastInstance client, final int collectionCounter)

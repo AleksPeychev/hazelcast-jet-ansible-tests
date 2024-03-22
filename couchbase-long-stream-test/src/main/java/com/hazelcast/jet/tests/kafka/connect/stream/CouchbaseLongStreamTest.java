@@ -17,8 +17,11 @@
 package com.hazelcast.jet.tests.kafka.connect.stream;
 
 import com.couchbase.client.core.error.CollectionNotFoundException;
+import com.couchbase.client.java.Bucket;
+import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.manager.bucket.BucketManager;
 import com.couchbase.client.java.manager.bucket.BucketSettings;
+import com.couchbase.client.java.manager.bucket.BucketType;
 import com.couchbase.client.java.manager.collection.CollectionManager;
 import com.couchbase.client.java.manager.collection.CollectionSpec;
 import com.hazelcast.core.HazelcastInstance;
@@ -31,16 +34,13 @@ import com.hazelcast.jet.pipeline.StreamSource;
 import com.hazelcast.jet.tests.common.AbstractSoakTest;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.shaded.com.fasterxml.jackson.jr.ob.impl.DeferredMap;
-import com.couchbase.client.java.Bucket;
-import com.couchbase.client.java.Cluster;
-import com.couchbase.client.java.manager.bucket.BucketType;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
-import java.time.Duration;
 import java.util.Properties;
 
 import static com.hazelcast.jet.config.ProcessingGuarantee.EXACTLY_ONCE;
@@ -92,7 +92,7 @@ public class CouchbaseLongStreamTest
                                                       .ramQuotaMB(propertyInt("couchbaseRamQuotaMb", 2048))
                                                       .numReplicas(1)
                                                       .replicaIndexes(true)
-                                                      .flushEnabled(false);
+                                                      .flushEnabled(false).maxExpiry(Duration.ZERO);
         bucketManager.createBucket(bucketSettings);
 
         bucket = cluster.bucket(BUCKET_NAME);
@@ -226,7 +226,7 @@ public class CouchbaseLongStreamTest
             System.err.println("Error deleting collection: " + e.getMessage());
         }
 
-        collectionMgr.createCollection(CollectionSpec.create(collectionName));
+        collectionMgr.createCollection(CollectionSpec.create(collectionName, Duration.ZERO));
     }
 
     public StreamSource<String> streamSource(String clusterName) {
