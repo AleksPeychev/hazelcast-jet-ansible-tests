@@ -70,7 +70,7 @@ public class CouchbaseTest
     private static final String DOC_COUNTER_PREFIX = "-counter-";
     private static final String STREAM_READ_FROM_PREFIX = CouchbaseTest.class.getSimpleName() + "_streamReadFrom_";
     private static final String STREAM_SINK_LIST_NAME = CouchbaseTest.class.getSimpleName() + "_listSinkStream";
-    private static final String BUCKET_NAME = CouchbaseTest.class.getSimpleName() + 1;
+    private static final String BUCKET_NAME = CouchbaseTest.class.getSimpleName();
     private static final String CONNECTOR_URL = "https://repository.hazelcast.com/download"
             + "/tests/couchbase-kafka-connect-couchbase-4.1.11.zip";
     private Bucket bucket;
@@ -99,7 +99,7 @@ public class CouchbaseTest
         BucketManager bucketManager = cluster.buckets();
         BucketSettings bucketSettings = BucketSettings.create(BUCKET_NAME)
                                                       .bucketType(BucketType.COUCHBASE)
-                                                      .ramQuotaMB(propertyInt("couchbaseRamQuotaMb", 2048))
+                                                      .ramQuotaMB(propertyInt("couchbaseRamQuotaMb", 1024))
                                                       .numReplicas(0)
                                                       .replicaIndexes(false).flushEnabled(true).maxExpiry(Duration.ZERO);
         bucketManager.createBucket(bucketSettings);
