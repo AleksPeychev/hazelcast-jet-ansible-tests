@@ -29,6 +29,7 @@ import com.couchbase.client.java.manager.bucket.BucketType;
 import com.couchbase.client.java.manager.collection.CollectionManager;
 import com.couchbase.client.java.manager.collection.CollectionSpec;
 import com.couchbase.client.java.env.ClusterEnvironment;
+import com.couchbase.client.java.manager.collection.CreateCollectionSettings;
 import com.hazelcast.collection.IList;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.jet.Job;
@@ -179,8 +180,11 @@ public class CouchbaseTest
         } catch (Exception e) {
             System.err.println("Error deleting collection: " + e.getMessage());
         }
-
-        collectionMgr.createCollection(CollectionSpec.create(COLLECTION_PREFIX + collectionCounter));
+        //http://localhost:8091/pools/default/buckets/CouchbaseTest/scopes/_default/collections/
+        logger.info("TTL SHIT");
+        collectionMgr.createCollection("_default", COLLECTION_PREFIX + collectionCounter);
+//        collectionMgr.createCollection(CollectionSpec.create(COLLECTION_PREFIX + collectionCounter));
+//        CreateCollectionSettings.createCollectionSettings().maxExpiry(null).history(false).build();
     }
 
     private void startStreamReadFromCouchbasePipeline(final HazelcastInstance client, final int collectionCounter)

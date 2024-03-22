@@ -225,8 +225,9 @@ public class CouchbaseLongStreamTest
         } catch (Exception e) {
             System.err.println("Error deleting collection: " + e.getMessage());
         }
-
-        collectionMgr.createCollection(CollectionSpec.create(collectionName));
+        logger.info("TTL SHIT");
+        collectionMgr.createCollection("_default", collectionName);
+//        collectionMgr.createCollection(CollectionSpec.create(collectionName));
     }
 
     public StreamSource<String> streamSource(String clusterName) {
