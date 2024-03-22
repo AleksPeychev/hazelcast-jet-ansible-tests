@@ -64,9 +64,11 @@
                                 <includes>
                                     <include>com.hazelcast.jet.tests:*</include>
                                     <include>com.hazelcast.jet.tests.couchbase:*</include>
-                                    <include>com.couchbase.client:java-client</include>
+                                    <include>com.couchbase.client:*</include>
                                     <include>com.fasterxml.jackson.core:jackson-core</include>
                                     <include>com.hazelcast.jet:hazelcast-jet-kafka-connect</include>
+                                    <include>io.projectreactor:reactor-core</include>
+                                    <include>org.reactivestreams:reactive-streams</include>
                                 </includes>
                             </artifactSet>
                         </configuration>
