@@ -195,8 +195,7 @@ public class CouchbaseTest
                      .map(entry -> ((DeferredMap) entry.get("content")).get("docId").toString())
                      .writeTo(Sinks.list(STREAM_SINK_LIST_NAME));
 
-        final JobConfig jobConfig = new JobConfig().addClass(TestUtil.class)
-                                                   .addJarsInZip(getCouchbaseConnectorURL());
+        final JobConfig jobConfig = new JobConfig().addJarsInZip(getCouchbaseConnectorURL());
         jobConfig.setName(STREAM_READ_FROM_PREFIX + collectionCounter);
         final Job job = client.getJet().newJob(fromCouchbase, jobConfig);
         assertJobStatusEventually(job);
