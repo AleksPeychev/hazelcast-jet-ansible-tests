@@ -58,7 +58,7 @@ public class CouchbaseLongStreamTest
     private static final int DEFAULT_TIMEOUT_FOR_NO_DATA_PROCESSED_MIN = 5;
     private static final int ASSERTION_ATTEMPTS = 1200;
     private static final int ASSERTION_SLEEP_MS = 100;
-    private static final String BUCKET_NAME = CouchbaseLongStreamTest.class.getSimpleName() + 2;
+    private static final String BUCKET_NAME = CouchbaseLongStreamTest.class.getSimpleName() + 3;
     private static final String CONNECTOR_URL = "https://repository.hazelcast.com/download"
             + "/tests/couchbase-kafka-connect-couchbase-4.1.11.zip";
     private String couchbaseConnectionString;
