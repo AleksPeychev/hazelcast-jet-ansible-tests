@@ -70,7 +70,7 @@ public class CouchbaseTest
     private static final String DOC_COUNTER_PREFIX = "-counter-";
     private static final String STREAM_READ_FROM_PREFIX = CouchbaseTest.class.getSimpleName() + "_streamReadFrom_";
     private static final String STREAM_SINK_LIST_NAME = CouchbaseTest.class.getSimpleName() + "_listSinkStream";
-    private static final String BUCKET_NAME = CouchbaseTest.class.getSimpleName() + 3;
+    private static final String BUCKET_NAME = CouchbaseTest.class.getSimpleName();
     private static final String CONNECTOR_URL = "https://repository.hazelcast.com/download"
             + "/tests/couchbase-kafka-connect-couchbase-4.1.11.zip";
     private Bucket bucket;
@@ -179,11 +179,7 @@ public class CouchbaseTest
         } catch (Exception e) {
             System.err.println("Error deleting collection: " + e.getMessage());
         }
-        //http://localhost:8091/pools/default/buckets/CouchbaseTest/scopes/_default/collections/
-        logger.info("TTL SHIT");
         collectionMgr.createCollection("_default", COLLECTION_PREFIX + collectionCounter);
-//        collectionMgr.createCollection(CollectionSpec.create(COLLECTION_PREFIX + collectionCounter));
-//        CreateCollectionSettings.createCollectionSettings().maxExpiry(null).history(false).build();
     }
 
     private void startStreamReadFromCouchbasePipeline(final HazelcastInstance client, final int collectionCounter)
