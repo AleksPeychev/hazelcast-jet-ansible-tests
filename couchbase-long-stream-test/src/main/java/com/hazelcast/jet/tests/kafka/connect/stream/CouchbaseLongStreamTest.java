@@ -16,9 +16,12 @@
 
 package com.hazelcast.jet.tests.kafka.connect.stream;
 
+import com.couchbase.client.core.env.TimeoutConfig;
 import com.couchbase.client.core.error.CollectionNotFoundException;
+import com.couchbase.client.core.retry.BestEffortRetryStrategy;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
+import com.couchbase.client.java.env.ClusterEnvironment;
 import com.couchbase.client.java.manager.bucket.BucketManager;
 import com.couchbase.client.java.manager.bucket.BucketSettings;
 import com.couchbase.client.java.manager.bucket.BucketType;
@@ -43,6 +46,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+import static com.couchbase.client.java.ClusterOptions.clusterOptions;
 import static com.hazelcast.jet.config.ProcessingGuarantee.EXACTLY_ONCE;
 import static com.hazelcast.jet.core.JobStatus.FAILED;
 import static com.hazelcast.jet.core.JobStatus.RUNNING;
@@ -58,7 +62,7 @@ public class CouchbaseLongStreamTest
     private static final int DEFAULT_TIMEOUT_FOR_NO_DATA_PROCESSED_MIN = 5;
     private static final int ASSERTION_ATTEMPTS = 1200;
     private static final int ASSERTION_SLEEP_MS = 100;
-    private static final String BUCKET_NAME = CouchbaseLongStreamTest.class.getSimpleName() + 3;
+    private static final String BUCKET_NAME = CouchbaseLongStreamTest.class.getSimpleName() + 4;
     private static final String CONNECTOR_URL = "https://repository.hazelcast.com/download"
             + "/tests/couchbase-kafka-connect-couchbase-4.1.11.zip";
     private String couchbaseConnectionString;
@@ -76,7 +80,7 @@ public class CouchbaseLongStreamTest
 
     @Override
     public void init(final HazelcastInstance client) {
-        couchbaseConnectionString = "couchbase://" + property("couchbaseIp", "34.229.174.151") + ":11210";
+        couchbaseConnectionString = "couchbase://" + property("couchbaseIp", "127.0.0.1") + ":11210";
         couchbaseUsername = "Administrator";
         couchbasePassword = "Soak-test,1";
         snapshotIntervalMs = propertyInt("snapshotIntervalMs", DEFAULT_SNAPSHOT_INTERVAL);
@@ -84,15 +88,21 @@ public class CouchbaseLongStreamTest
         timeoutForNoDataProcessedMin = propertyInt("timeoutForNoProcessedDataMin",
                 DEFAULT_TIMEOUT_FOR_NO_DATA_PROCESSED_MIN);
         //don`t see here the argument form Ansible tests : remoteClusterYaml={{jet_home}}/config/hazelcast-client.yaml
-        cluster = Cluster.connect(couchbaseConnectionString, couchbaseUsername, couchbasePassword);
+        ClusterEnvironment environment = ClusterEnvironment.builder().retryStrategy(BestEffortRetryStrategy.INSTANCE)
+                                                           .timeoutConfig(TimeoutConfig.kvTimeout(Duration.ofMillis(2500)))
+                                                           .build();
+        logger.info("Couchbase connection string : " + couchbaseConnectionString);
+        Cluster cluster = Cluster.connect(couchbaseConnectionString,
+                clusterOptions(couchbaseUsername, couchbasePassword).environment(environment));
+        logger.info("Successfully connected to couchbase cluster");
         BucketManager bucketManager = cluster.buckets();
         // RAM quota for the bucket is mandatory set it to 6GB as c5.xlarge instance has 8GB
         BucketSettings bucketSettings = BucketSettings.create(BUCKET_NAME)
                                                       .bucketType(BucketType.COUCHBASE)
                                                       .ramQuotaMB(propertyInt("couchbaseRamQuotaMb", 2048))
-                                                      .numReplicas(1)
-                                                      .replicaIndexes(true)
-                                                      .flushEnabled(false);
+                                                      .numReplicas(0)
+                                                      .replicaIndexes(false)
+                                                      .flushEnabled(true);
         bucketManager.createBucket(bucketSettings);
 
         bucket = cluster.bucket(BUCKET_NAME);
