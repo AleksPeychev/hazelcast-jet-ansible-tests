@@ -67,6 +67,8 @@
                                     <include>com.couchbase.client:*</include>
                                     <include>com.fasterxml.jackson.core:jackson-core</include>
                                     <include>com.hazelcast.jet:hazelcast-jet-kafka-connect</include>
+                                    <include>io.projectreactor:reactor-core</include>
+                                    <include>org.reactivestreams:reactive-streams</include>
                                 </includes>
                             </artifactSet>
                         </configuration>
@@ -97,11 +99,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>2.14.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.hazelcast.jet</groupId>
-            <artifactId>hazelcast-jet-mongodb</artifactId>
-            <version>${hazelcast.version}</version>
         </dependency>
     </dependencies>
 </project>

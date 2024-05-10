@@ -70,7 +70,6 @@ public class CouchbaseLongStreamTest
     private String couchbasePassword;
     private int snapshotIntervalMs;
     private int timeoutForNoDataProcessedMin;
-    private Cluster cluster;
     private Bucket bucket;
 
     public static void main(final String[] args)
