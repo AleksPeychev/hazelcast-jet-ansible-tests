@@ -138,7 +138,7 @@ public class CouchbaseLongStreamTest
             jobConfig.setSnapshotIntervalMillis(snapshotIntervalMs);
             jobConfig.setProcessingGuarantee(EXACTLY_ONCE);
         } else {
-            jobConfig.addClass(com.fasterxml.jackson.core.JsonFactory.class)
+            jobConfig.addClass(CouchbaseLongStreamTest.class, CouchbaseDocsProducer.class, VerificationProcessor.class)
                      .addJarsInZip(getCouchbaseConnectorURL());
         }
 
