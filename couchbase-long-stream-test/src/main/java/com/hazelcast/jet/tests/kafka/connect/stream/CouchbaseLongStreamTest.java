@@ -89,10 +89,9 @@ public class CouchbaseLongStreamTest
                                                            .retryStrategy(BestEffortRetryStrategy.INSTANCE)
                                                            .timeoutConfig(TimeoutConfig.kvTimeout(Duration.ofMillis(2500)))
                                                            .build();
-        logger.info("Couchbase connection string : " + couchbaseConnectionString);
         Cluster cluster = Cluster.connect(couchbaseConnectionString,
                 clusterOptions(couchbaseUsername, couchbasePassword).environment(environment));
-        BucketManager bucketManager = cluster.buckets();
+        bucket = cluster.bucket(BUCKET_NAME);
         // RAM quota for the cluster is mandatory set it to 6GB as c5.xlarge instance has 8GB
 
     }

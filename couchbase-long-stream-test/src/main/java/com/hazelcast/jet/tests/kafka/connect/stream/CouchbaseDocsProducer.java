@@ -16,9 +16,12 @@
 
 package com.hazelcast.jet.tests.kafka.connect.stream;
 
+import com.couchbase.client.core.env.TimeoutConfig;
+import com.couchbase.client.core.retry.BestEffortRetryStrategy;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.Collection;
+import com.couchbase.client.java.env.ClusterEnvironment;
 import com.couchbase.client.java.json.JsonObject;
 import com.couchbase.client.java.manager.bucket.BucketManager;
 import com.couchbase.client.java.manager.bucket.BucketSettings;
@@ -27,6 +30,7 @@ import com.hazelcast.logging.ILogger;
 
 import java.time.Duration;
 
+import static com.couchbase.client.java.ClusterOptions.clusterOptions;
 import static com.hazelcast.jet.impl.util.Util.uncheckRun;
 import static com.hazelcast.jet.tests.common.Util.sleepMillis;
 
@@ -59,7 +63,12 @@ public class CouchbaseDocsProducer {
     }
 
     private void run() {
-        try (Cluster cluster = Cluster.connect(couchbaseConnectionString, couchbaseUsername, couchbasePassword)) {
+        ClusterEnvironment environment = ClusterEnvironment.builder().retryStrategy(BestEffortRetryStrategy.INSTANCE)
+                                                           .timeoutConfig(
+                                                                   TimeoutConfig.kvTimeout(Duration.ofMillis(2500)))
+                                                           .build();
+        try (Cluster cluster = Cluster.connect(couchbaseConnectionString,
+                clusterOptions(couchbaseUsername, couchbasePassword).environment(environment))) {
             BucketManager bucketManager = cluster.buckets();
             BucketSettings bucketSettings = BucketSettings.create(bucketName).bucketType(BucketType.COUCHBASE)
                                                           .ramQuotaMB(couchbaseRamQuotaMb)
