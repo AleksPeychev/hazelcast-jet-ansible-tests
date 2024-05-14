@@ -35,6 +35,7 @@ public class CouchbaseDocsProducer {
     private final String couchbaseConnectionString;
     private final String couchbaseUsername;
     private final String couchbasePassword;
+    private final int couchbaseRamQuotaMb;
     private final String bucketName;
     private final String collectionName;
     private final ILogger logger;
@@ -45,11 +46,12 @@ public class CouchbaseDocsProducer {
     //must add data for infinite time to Couchbase
     //only inserting data need to be adjusted
     public CouchbaseDocsProducer(final String couchbaseConnectionString, final String couchbaseUsername,
-                                 final String couchbasePassword, String bucketName,
+                                 final String couchbasePassword, final int couchbaseRamQuotaMb, final String bucketName,
                                  final String collectionName, ILogger logger) {
         this.couchbaseConnectionString = couchbaseConnectionString;
         this.couchbaseUsername = couchbaseUsername;
         this.couchbasePassword = couchbasePassword;
+        this.couchbaseRamQuotaMb = couchbaseRamQuotaMb;
         this.bucketName = bucketName;
         this.collectionName = collectionName;
         this.logger = logger;
@@ -60,10 +62,9 @@ public class CouchbaseDocsProducer {
         try (Cluster cluster = Cluster.connect(couchbaseConnectionString, couchbaseUsername, couchbasePassword)) {
             BucketManager bucketManager = cluster.buckets();
             BucketSettings bucketSettings = BucketSettings.create(bucketName).bucketType(BucketType.COUCHBASE)
-                                                          .ramQuotaMB(101)
-                                                          .numReplicas(0).replicaIndexes(false).flushEnabled(true);
+                                                          .ramQuotaMB(couchbaseRamQuotaMb).numReplicas(0).replicaIndexes(false)
+                                                          .flushEnabled(true);
             bucketManager.createBucket(bucketSettings);
-
             Bucket bucket = cluster.bucket(bucketName);
             bucket.waitUntilReady(Duration.ofSeconds(10));
             Collection collection = bucket.collection(collectionName);
@@ -78,8 +79,7 @@ public class CouchbaseDocsProducer {
                 sleepMillis(150);
             }
         } finally {
-            logger.info(String.format("Total number of inserted docs into %s collection is %d", collectionName,
-                    producedItems));
+            logger.info(String.format("Total number of inserted docs into %s collection is %d", collectionName, producedItems));
         }
     }
 

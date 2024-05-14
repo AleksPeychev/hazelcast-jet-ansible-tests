@@ -63,8 +63,8 @@ public class CouchbaseLongStreamTest
     private static final int ASSERTION_ATTEMPTS = 1200;
     private static final int ASSERTION_SLEEP_MS = 100;
     private static final String BUCKET_NAME = CouchbaseLongStreamTest.class.getSimpleName() + 4;
-    private static final String CONNECTOR_URL = "https://repository.hazelcast.com/download"
-            + "/tests/couchbase-kafka-connect-couchbase-4.1.11.zip";
+    private static final String CONNECTOR_URL =
+            "https://repository.hazelcast.com/download" + "/tests/couchbase-kafka-connect-couchbase-4.1.11.zip";
     private String couchbaseConnectionString;
     private String couchbaseUsername;
     private String couchbasePassword;
@@ -84,8 +84,7 @@ public class CouchbaseLongStreamTest
         couchbasePassword = "Soak-test,1";
         snapshotIntervalMs = propertyInt("snapshotIntervalMs", DEFAULT_SNAPSHOT_INTERVAL);
         //don`t see it as argument in Ansible tests
-        timeoutForNoDataProcessedMin = propertyInt("timeoutForNoProcessedDataMin",
-                DEFAULT_TIMEOUT_FOR_NO_DATA_PROCESSED_MIN);
+        timeoutForNoDataProcessedMin = propertyInt("timeoutForNoProcessedDataMin", DEFAULT_TIMEOUT_FOR_NO_DATA_PROCESSED_MIN);
         //don`t see here the argument form Ansible tests : remoteClusterYaml={{jet_home}}/config/hazelcast-client.yaml
         ClusterEnvironment environment = ClusterEnvironment.builder().retryStrategy(BestEffortRetryStrategy.INSTANCE)
                                                            .timeoutConfig(TimeoutConfig.kvTimeout(Duration.ofMillis(2500)))
@@ -93,19 +92,9 @@ public class CouchbaseLongStreamTest
         logger.info("Couchbase connection string : " + couchbaseConnectionString);
         Cluster cluster = Cluster.connect(couchbaseConnectionString,
                 clusterOptions(couchbaseUsername, couchbasePassword).environment(environment));
-        logger.info("Successfully connected to couchbase cluster");
         BucketManager bucketManager = cluster.buckets();
-        // RAM quota for the bucket is mandatory set it to 6GB as c5.xlarge instance has 8GB
-        BucketSettings bucketSettings = BucketSettings.create(BUCKET_NAME)
-                                                      .bucketType(BucketType.COUCHBASE)
-                                                      .ramQuotaMB(propertyInt("couchbaseRamQuotaMb", 2048))
-                                                      .numReplicas(0)
-                                                      .replicaIndexes(false)
-                                                      .flushEnabled(true);
-        bucketManager.createBucket(bucketSettings);
+        // RAM quota for the cluster is mandatory set it to 6GB as c5.xlarge instance has 8GB
 
-        bucket = cluster.bucket(BUCKET_NAME);
-        bucket.waitUntilReady(Duration.ofSeconds(10));
     }
 
     //Need it for the Dynamic_cluster
@@ -138,8 +127,8 @@ public class CouchbaseLongStreamTest
             jobConfig.setSnapshotIntervalMillis(snapshotIntervalMs);
             jobConfig.setProcessingGuarantee(EXACTLY_ONCE);
         } else {
-            jobConfig.addClass(CouchbaseLongStreamTest.class, CouchbaseDocsProducer.class, VerificationProcessor.class)
-                     .addJarsInZip(getCouchbaseConnectorURL());
+            jobConfig.addClass(CouchbaseLongStreamTest.class, CouchbaseDocsProducer.class, VerificationProcessor.class,
+                    TestUtil.class).addJarsInZip(getCouchbaseConnectorURL());
         }
 
         jobConfig.setName(clusterName + "_" + BUCKET_NAME);
@@ -148,7 +137,7 @@ public class CouchbaseLongStreamTest
         assertJobStatusEventually(job);
 
         final CouchbaseDocsProducer producer = new CouchbaseDocsProducer(couchbaseConnectionString, couchbaseUsername,
-                couchbasePassword, BUCKET_NAME, clusterName, logger);
+                couchbasePassword, propertyInt("couchbaseRamQuotaMb", 2048), BUCKET_NAME, clusterName, logger);
         producer.start();
 
         final long expectedTotalCount;
@@ -164,8 +153,7 @@ public class CouchbaseLongStreamTest
 
                     if (processedDocs == lastlyProcessed) {
                         noNewDocsCounter++;
-                        log(logger, "Nothing was processed in last minute, current counter:" + processedDocs,
-                                clusterName);
+                        log(logger, "Nothing was processed in last minute, current counter:" + processedDocs, clusterName);
                         if (noNewDocsCounter > timeoutForNoDataProcessedMin) {
                             throw new AssertionError("Failed. Exceeded timeout for no data processed");
                         }
@@ -197,8 +185,7 @@ public class CouchbaseLongStreamTest
             }
         }
         throw new AssertionError(
-                "Job " + job.getName() + " does not have expected status: " + RUNNING + ". Job status: "
-                        + job.getStatus());
+                "Job " + job.getName() + " does not have expected status: " + RUNNING + ". Job status: " + job.getStatus());
     }
 
     private static long getNumberOfProcessedDocs(final HazelcastInstance client, final String clusterName) {
@@ -236,7 +223,7 @@ public class CouchbaseLongStreamTest
         }
         logger.info("TTL SHIT");
         collectionMgr.createCollection("_default", collectionName);
-//        collectionMgr.createCollection(CollectionSpec.create(collectionName));
+        //        collectionMgr.createCollection(CollectionSpec.create(collectionName));
     }
 
     public StreamSource<String> streamSource(String clusterName) {
