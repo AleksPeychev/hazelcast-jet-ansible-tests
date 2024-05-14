@@ -62,7 +62,9 @@ public class CouchbaseDocsProducer {
         try (Cluster cluster = Cluster.connect(couchbaseConnectionString, couchbaseUsername, couchbasePassword)) {
             BucketManager bucketManager = cluster.buckets();
             BucketSettings bucketSettings = BucketSettings.create(bucketName).bucketType(BucketType.COUCHBASE)
-                                                          .ramQuotaMB(couchbaseRamQuotaMb).numReplicas(0).replicaIndexes(false)
+                                                          .ramQuotaMB(couchbaseRamQuotaMb)
+                                                          .numReplicas(0)
+                                                          .replicaIndexes(false)
                                                           .flushEnabled(true);
             bucketManager.createBucket(bucketSettings);
             Bucket bucket = cluster.bucket(bucketName);

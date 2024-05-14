@@ -23,8 +23,6 @@ import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.env.ClusterEnvironment;
 import com.couchbase.client.java.manager.bucket.BucketManager;
-import com.couchbase.client.java.manager.bucket.BucketSettings;
-import com.couchbase.client.java.manager.bucket.BucketType;
 import com.couchbase.client.java.manager.collection.CollectionManager;
 import com.couchbase.client.java.manager.collection.CollectionSpec;
 import com.hazelcast.core.HazelcastInstance;
@@ -84,9 +82,11 @@ public class CouchbaseLongStreamTest
         couchbasePassword = "Soak-test,1";
         snapshotIntervalMs = propertyInt("snapshotIntervalMs", DEFAULT_SNAPSHOT_INTERVAL);
         //don`t see it as argument in Ansible tests
-        timeoutForNoDataProcessedMin = propertyInt("timeoutForNoProcessedDataMin", DEFAULT_TIMEOUT_FOR_NO_DATA_PROCESSED_MIN);
+        timeoutForNoDataProcessedMin = propertyInt("timeoutForNoProcessedDataMin",
+                DEFAULT_TIMEOUT_FOR_NO_DATA_PROCESSED_MIN);
         //don`t see here the argument form Ansible tests : remoteClusterYaml={{jet_home}}/config/hazelcast-client.yaml
-        ClusterEnvironment environment = ClusterEnvironment.builder().retryStrategy(BestEffortRetryStrategy.INSTANCE)
+        ClusterEnvironment environment = ClusterEnvironment.builder()
+                                                           .retryStrategy(BestEffortRetryStrategy.INSTANCE)
                                                            .timeoutConfig(TimeoutConfig.kvTimeout(Duration.ofMillis(2500)))
                                                            .build();
         logger.info("Couchbase connection string : " + couchbaseConnectionString);
@@ -153,7 +153,8 @@ public class CouchbaseLongStreamTest
 
                     if (processedDocs == lastlyProcessed) {
                         noNewDocsCounter++;
-                        log(logger, "Nothing was processed in last minute, current counter:" + processedDocs, clusterName);
+                        log(logger, "Nothing was processed in last minute, current counter:" + processedDocs,
+                                clusterName);
                         if (noNewDocsCounter > timeoutForNoDataProcessedMin) {
                             throw new AssertionError("Failed. Exceeded timeout for no data processed");
                         }
@@ -185,7 +186,8 @@ public class CouchbaseLongStreamTest
             }
         }
         throw new AssertionError(
-                "Job " + job.getName() + " does not have expected status: " + RUNNING + ". Job status: " + job.getStatus());
+                "Job " + job.getName() + " does not have expected status: " + RUNNING + ". Job status: "
+                        + job.getStatus());
     }
 
     private static long getNumberOfProcessedDocs(final HazelcastInstance client, final String clusterName) {
