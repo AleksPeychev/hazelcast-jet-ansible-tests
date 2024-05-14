@@ -22,6 +22,9 @@ import com.couchbase.client.core.retry.BestEffortRetryStrategy;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.env.ClusterEnvironment;
+import com.couchbase.client.java.manager.bucket.BucketManager;
+import com.couchbase.client.java.manager.bucket.BucketSettings;
+import com.couchbase.client.java.manager.bucket.BucketType;
 import com.couchbase.client.java.manager.collection.CollectionManager;
 import com.couchbase.client.java.manager.collection.CollectionSpec;
 import com.hazelcast.core.HazelcastInstance;
@@ -84,15 +87,23 @@ public class CouchbaseLongStreamTest
         timeoutForNoDataProcessedMin = propertyInt("timeoutForNoProcessedDataMin",
                 DEFAULT_TIMEOUT_FOR_NO_DATA_PROCESSED_MIN);
         //don`t see here the argument form Ansible tests : remoteClusterYaml={{jet_home}}/config/hazelcast-client.yaml
-        ClusterEnvironment environment = ClusterEnvironment.builder()
-                                                           .retryStrategy(BestEffortRetryStrategy.INSTANCE)
-                                                           .timeoutConfig(TimeoutConfig.kvTimeout(Duration.ofMillis(2500)))
+        // RAM quota for the cluster is mandatory set it to 6GB as c5.xlarge instance has 8GB
+        ClusterEnvironment environment = ClusterEnvironment.builder().retryStrategy(BestEffortRetryStrategy.INSTANCE)
+                                                           .timeoutConfig(
+                                                                   TimeoutConfig.kvTimeout(Duration.ofMillis(2500)))
                                                            .build();
+
+        //should I close connection to cluster here
         Cluster cluster = Cluster.connect(couchbaseConnectionString,
                 clusterOptions(couchbaseUsername, couchbasePassword).environment(environment));
+        BucketManager bucketManager = cluster.buckets();
+        BucketSettings bucketSettings = BucketSettings.create(BUCKET_NAME).bucketType(BucketType.COUCHBASE)
+                                                      .ramQuotaMB(propertyInt("couchbaseRamQuotaMb", 2048))
+                                                      .numReplicas(0)
+                                                      .replicaIndexes(false).flushEnabled(true);
+        bucketManager.createBucket(bucketSettings);
         bucket = cluster.bucket(BUCKET_NAME);
-        // RAM quota for the cluster is mandatory set it to 6GB as c5.xlarge instance has 8GB
-
+        bucket.waitUntilReady(Duration.ofSeconds(10));
     }
 
     //Need it for the Dynamic_cluster
@@ -134,8 +145,7 @@ public class CouchbaseLongStreamTest
         final Job job = client.getJet().newJob(fromCouchbase, jobConfig);
         assertJobStatusEventually(job);
 
-        final CouchbaseDocsProducer producer = new CouchbaseDocsProducer(couchbaseConnectionString, couchbaseUsername,
-                couchbasePassword, propertyInt("couchbaseRamQuotaMb", 2048), BUCKET_NAME, clusterName, logger);
+        final CouchbaseDocsProducer producer = new CouchbaseDocsProducer(bucket, clusterName, logger);
         producer.start();
 
         final long expectedTotalCount;

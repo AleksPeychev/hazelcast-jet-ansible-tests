@@ -36,11 +36,7 @@ import static com.hazelcast.jet.tests.common.Util.sleepMillis;
 
 public class CouchbaseDocsProducer {
     private static final int PRINT_LOG_INSERT_ITEMS = 5_000;
-    private final String couchbaseConnectionString;
-    private final String couchbaseUsername;
-    private final String couchbasePassword;
-    private final int couchbaseRamQuotaMb;
-    private final String bucketName;
+    private final Bucket bucket;
     private final String collectionName;
     private final ILogger logger;
     private final Thread producerThread;
@@ -49,50 +45,27 @@ public class CouchbaseDocsProducer {
 
     //must add data for infinite time to Couchbase
     //only inserting data need to be adjusted
-    public CouchbaseDocsProducer(final String couchbaseConnectionString, final String couchbaseUsername,
-                                 final String couchbasePassword, final int couchbaseRamQuotaMb, final String bucketName,
-                                 final String collectionName, ILogger logger) {
-        this.couchbaseConnectionString = couchbaseConnectionString;
-        this.couchbaseUsername = couchbaseUsername;
-        this.couchbasePassword = couchbasePassword;
-        this.couchbaseRamQuotaMb = couchbaseRamQuotaMb;
-        this.bucketName = bucketName;
+    public CouchbaseDocsProducer(final Bucket bucket, final String collectionName, ILogger logger) {
+        this.bucket = bucket;
         this.collectionName = collectionName;
         this.logger = logger;
         this.producerThread = new Thread(() -> uncheckRun(this::run));
     }
 
     private void run() {
-        ClusterEnvironment environment = ClusterEnvironment.builder().retryStrategy(BestEffortRetryStrategy.INSTANCE)
-                                                           .timeoutConfig(
-                                                                   TimeoutConfig.kvTimeout(Duration.ofMillis(2500)))
-                                                           .build();
-        try (Cluster cluster = Cluster.connect(couchbaseConnectionString,
-                clusterOptions(couchbaseUsername, couchbasePassword).environment(environment))) {
-            BucketManager bucketManager = cluster.buckets();
-            BucketSettings bucketSettings = BucketSettings.create(bucketName).bucketType(BucketType.COUCHBASE)
-                                                          .ramQuotaMB(couchbaseRamQuotaMb)
-                                                          .numReplicas(0)
-                                                          .replicaIndexes(false)
-                                                          .flushEnabled(true);
-            bucketManager.createBucket(bucketSettings);
-            Bucket bucket = cluster.bucket(bucketName);
-            bucket.waitUntilReady(Duration.ofSeconds(10));
-            Collection collection = bucket.collection(collectionName);
-            long id = 0;
-            while (running) {
-                collection.insert(String.valueOf(id), JsonObject.create().put("docId", id++));
-                producedItems = id;
+        Collection collection = bucket.collection(collectionName);
+        long id = 0;
+        while (running) {
+            collection.insert(String.valueOf(id), JsonObject.create().put("docId", id++));
+            producedItems = id;
 
-                if (id % PRINT_LOG_INSERT_ITEMS == 0) {
-                    logger.info(String.format("Inserted %d docs into %s collection)", id, collectionName));
-                }
-                sleepMillis(150);
+            if (id % PRINT_LOG_INSERT_ITEMS == 0) {
+                logger.info(String.format("Inserted %d docs into %s collection)", id, collectionName));
             }
-        } finally {
-            logger.info(String.format("Total number of inserted docs into %s collection is %d", collectionName,
-                    producedItems));
+            sleepMillis(150);
         }
+        logger.info(
+                String.format("Total number of inserted docs into %s collection is %d", collectionName, producedItems));
     }
 
     public void start() {
