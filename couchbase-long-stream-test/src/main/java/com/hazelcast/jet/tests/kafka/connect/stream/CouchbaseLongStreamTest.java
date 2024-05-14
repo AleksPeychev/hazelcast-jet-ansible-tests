@@ -22,7 +22,6 @@ import com.couchbase.client.core.retry.BestEffortRetryStrategy;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.env.ClusterEnvironment;
-import com.couchbase.client.java.manager.bucket.BucketManager;
 import com.couchbase.client.java.manager.collection.CollectionManager;
 import com.couchbase.client.java.manager.collection.CollectionSpec;
 import com.hazelcast.core.HazelcastInstance;
