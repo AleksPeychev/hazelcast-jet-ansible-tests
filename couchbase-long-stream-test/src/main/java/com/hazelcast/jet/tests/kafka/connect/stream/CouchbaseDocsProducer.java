@@ -16,21 +16,11 @@
 
 package com.hazelcast.jet.tests.kafka.connect.stream;
 
-import com.couchbase.client.core.env.TimeoutConfig;
-import com.couchbase.client.core.retry.BestEffortRetryStrategy;
 import com.couchbase.client.java.Bucket;
-import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.Collection;
-import com.couchbase.client.java.env.ClusterEnvironment;
 import com.couchbase.client.java.json.JsonObject;
-import com.couchbase.client.java.manager.bucket.BucketManager;
-import com.couchbase.client.java.manager.bucket.BucketSettings;
-import com.couchbase.client.java.manager.bucket.BucketType;
 import com.hazelcast.logging.ILogger;
 
-import java.time.Duration;
-
-import static com.couchbase.client.java.ClusterOptions.clusterOptions;
 import static com.hazelcast.jet.impl.util.Util.uncheckRun;
 import static com.hazelcast.jet.tests.common.Util.sleepMillis;
 
