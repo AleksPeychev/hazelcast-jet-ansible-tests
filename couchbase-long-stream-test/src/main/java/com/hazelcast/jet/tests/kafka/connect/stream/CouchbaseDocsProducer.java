@@ -81,7 +81,8 @@ public class CouchbaseDocsProducer {
                 sleepMillis(150);
             }
         } finally {
-            logger.info(String.format("Total number of inserted docs into %s collection is %d", collectionName, producedItems));
+            logger.info(String.format("Total number of inserted docs into %s collection is %d", collectionName,
+                    producedItems));
         }
     }
 
