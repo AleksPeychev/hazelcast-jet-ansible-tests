@@ -126,7 +126,7 @@ public class CouchbaseLongStreamTest
         //map object to long, because verification processor needs long
         final Pipeline fromCouchbase = Pipeline.create();
         fromCouchbase.readFrom(couchbaseSource).withoutTimestamps().map(base64 -> Base64.getDecoder().decode(base64))
-                     .map(JsonUtil::mapFrom).map(entry -> (Long) ((DeferredMap) entry.get("content")).get("docId"))
+                     .map(JsonUtil::mapFrom).map(entry -> Long.valueOf((Integer) ((DeferredMap) entry.get("content")).get("docId")))
                      .writeTo(VerificationProcessor.sink(clusterName));
 
         //add the classes and coucnhbase client jar

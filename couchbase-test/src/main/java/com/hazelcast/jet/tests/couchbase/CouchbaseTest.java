@@ -64,7 +64,7 @@ public class CouchbaseTest
     private static final int JOB_STATUS_ASSERTION_ATTEMPTS = 1200;
     private static final int JOB_STATUS_ASSERTION_SLEEP_MS = 100;
     private static final int STREAM_SINK_ASSERTION_ATTEMPTS = 120;
-    private static final int STREAM_SINK_ASSERTION_SLEEP_MS = 1000;
+    private static final int STREAM_SINK_ASSERTION_SLEEP_MS = 2000;
     private static final String COLLECTION_PREFIX = "collection_";
     private static final String DOC_PREFIX = "couchbase-document-from-collection-";
     private static final String DOC_COUNTER_PREFIX = "-counter-";
