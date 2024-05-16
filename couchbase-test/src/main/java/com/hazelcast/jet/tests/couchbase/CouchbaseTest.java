@@ -192,8 +192,7 @@ public class CouchbaseTest
                      .map(jsonObject -> jsonObject.get("content").asObject().get("docId").asString())
                      .writeTo(Sinks.list(STREAM_SINK_LIST_NAME));
 
-        final JobConfig jobConfig = new JobConfig().addClass(com.fasterxml.jackson.core.JsonFactory.class)
-                                                   .addJarsInZip(getCouchbaseConnectorURL());
+        final JobConfig jobConfig = new JobConfig().addJarsInZip(getCouchbaseConnectorURL());
         jobConfig.setName(STREAM_READ_FROM_PREFIX + collectionCounter);
         final Job job = client.getJet().newJob(fromCouchbase, jobConfig);
         assertJobStatusEventually(job);
