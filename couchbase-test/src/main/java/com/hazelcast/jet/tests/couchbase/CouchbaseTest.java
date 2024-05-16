@@ -186,7 +186,7 @@ public class CouchbaseTest
         final StreamSource<String> couchbaseSource = streamSource(collectionCounter);
         final Pipeline fromCouchbase = Pipeline.create();
         fromCouchbase.readFrom(couchbaseSource).withoutTimestamps().setLocalParallelism(1)
-                     .map(Base64.getDecoder()::decode)
+                     .map(base64 -> Base64.getDecoder().decode(base64))
                      .map(String::new)
                      .map(jsonString -> Json.parse(jsonString).asObject())
                      .map(jsonObject -> jsonObject.get("content").asObject().get("docId").toString())
