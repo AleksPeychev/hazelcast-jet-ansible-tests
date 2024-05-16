@@ -31,15 +31,14 @@ import com.couchbase.client.java.manager.collection.CollectionSpec;
 import com.couchbase.client.java.env.ClusterEnvironment;
 import com.hazelcast.collection.IList;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.internal.json.Json;
 import com.hazelcast.jet.Job;
 import com.hazelcast.jet.config.JobConfig;
-import com.hazelcast.jet.json.JsonUtil;
 import com.hazelcast.jet.kafka.connect.KafkaConnectSources;
 import com.hazelcast.jet.pipeline.Pipeline;
 import com.hazelcast.jet.pipeline.Sinks;
 import com.hazelcast.jet.pipeline.StreamSource;
 import com.hazelcast.jet.tests.common.AbstractSoakTest;
-import com.hazelcast.shaded.com.fasterxml.jackson.jr.ob.impl.DeferredMap;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -187,8 +186,10 @@ public class CouchbaseTest
         final StreamSource<String> couchbaseSource = streamSource(collectionCounter);
         final Pipeline fromCouchbase = Pipeline.create();
         fromCouchbase.readFrom(couchbaseSource).withoutTimestamps().setLocalParallelism(1)
-                     .map(base64 -> Base64.getDecoder().decode(base64)).map(JsonUtil::mapFrom)
-                     .map(entry -> ((DeferredMap) entry.get("content")).get("docId").toString())
+                     .map(Base64.getDecoder()::decode)
+                     .map(String::new)
+                     .map(jsonString -> Json.parse(jsonString).asObject())
+                     .map(jsonObject -> jsonObject.get("content").asObject().get("docId").toString())
                      .writeTo(Sinks.list(STREAM_SINK_LIST_NAME));
 
         final JobConfig jobConfig = new JobConfig().addClass(com.fasterxml.jackson.core.JsonFactory.class)

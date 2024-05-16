@@ -88,10 +88,7 @@ public class CouchbaseLongStreamTest
                 DEFAULT_TIMEOUT_FOR_NO_DATA_PROCESSED_MIN);
         //don`t see here the argument form Ansible tests : remoteClusterYaml={{jet_home}}/config/hazelcast-client.yaml
         // RAM quota for the cluster is mandatory set it to 6GB as c5.xlarge instance has 8GB
-        ClusterEnvironment environment = ClusterEnvironment.builder().retryStrategy(BestEffortRetryStrategy.INSTANCE)
-                                                           .timeoutConfig(
-                                                                   TimeoutConfig.kvTimeout(Duration.ofMillis(2500)))
-                                                           .build();
+        ClusterEnvironment environment = ClusterEnvironment.builder().retryStrategy(BestEffortRetryStrategy.INSTANCE).timeoutConfig(TimeoutConfig.kvTimeout(Duration.ofMillis(2500))).build();
 
         //should I close connection to cluster here
         Cluster cluster = Cluster.connect(couchbaseConnectionString,
