@@ -69,7 +69,7 @@ public class CouchbaseTest
     private static final String DOC_COUNTER_PREFIX = "-counter-";
     private static final String STREAM_READ_FROM_PREFIX = CouchbaseTest.class.getSimpleName() + "_streamReadFrom_";
     private static final String STREAM_SINK_LIST_NAME = CouchbaseTest.class.getSimpleName() + "_listSinkStream";
-    private static final String BUCKET_NAME = CouchbaseTest.class.getSimpleName() + 1;
+    private static final String BUCKET_NAME = CouchbaseTest.class.getSimpleName();
     private static final String CONNECTOR_URL = "https://repository.hazelcast.com/download"
             + "/tests/couchbase-kafka-connect-couchbase-4.1.11.zip";
     private Bucket bucket;
@@ -189,7 +189,7 @@ public class CouchbaseTest
                      .map(base64 -> Base64.getDecoder().decode(base64))
                      .map(String::new)
                      .map(jsonString -> Json.parse(jsonString).asObject())
-                     .map(jsonObject -> jsonObject.get("content").asObject().get("docId").toString())
+                     .map(jsonObject -> jsonObject.get("content").asObject().get("docId").asString())
                      .writeTo(Sinks.list(STREAM_SINK_LIST_NAME));
 
         final JobConfig jobConfig = new JobConfig().addClass(com.fasterxml.jackson.core.JsonFactory.class)
