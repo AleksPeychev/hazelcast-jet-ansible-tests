@@ -137,9 +137,10 @@ public class CouchbaseLongStreamTest
             jobConfig.setSnapshotIntervalMillis(snapshotIntervalMs);
             jobConfig.setProcessingGuarantee(EXACTLY_ONCE);
         } else {
-            jobConfig.addClass(CouchbaseLongStreamTest.class, CouchbaseDocsProducer.class, VerificationProcessor.class,
-                    TestUtil.class).addJarsInZip(getCouchbaseConnectorURL());
+            jobConfig.addClass(CouchbaseLongStreamTest.class);
         }
+        jobConfig.addClass(CouchbaseDocsProducer.class, VerificationProcessor.class,
+                TestUtil.class).addJarsInZip(getCouchbaseConnectorURL());
 
         jobConfig.setName(clusterName + "_" + BUCKET_NAME);
 
