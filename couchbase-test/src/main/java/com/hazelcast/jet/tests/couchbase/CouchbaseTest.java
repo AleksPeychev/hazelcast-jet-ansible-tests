@@ -183,7 +183,6 @@ public class CouchbaseTest
 
     private void startStreamReadFromCouchbasePipeline(final HazelcastInstance client, final int collectionCounter)
             throws URISyntaxException {
-        final JobConfig jobConfig = new JobConfig();
         final StreamSource<String> couchbaseSource = streamSource(collectionCounter);
         final Pipeline fromCouchbase = Pipeline.create();
         fromCouchbase.readFrom(couchbaseSource).withoutTimestamps().setLocalParallelism(1)
@@ -193,11 +192,7 @@ public class CouchbaseTest
                      .map(jsonObject -> jsonObject.get("content").asObject().get("docId").asString())
                      .writeTo(Sinks.list(STREAM_SINK_LIST_NAME));
 
-        // Add jars only once because of HZ-4742
-        if (collectionCounter == 0) {
-            jobConfig.addJarsInZip(getCouchbaseConnectorURL());
-        }
-        jobConfig.setName(STREAM_READ_FROM_PREFIX + collectionCounter);
+        final JobConfig jobConfig = new JobConfig().setName(STREAM_READ_FROM_PREFIX + collectionCounter);
         final Job job = client.getJet().newJob(fromCouchbase, jobConfig);
         assertJobStatusEventually(job);
 
