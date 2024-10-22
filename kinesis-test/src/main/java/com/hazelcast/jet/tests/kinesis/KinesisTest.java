@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package com.hazelcast.jet.tests.kinesis;
 
 import com.amazonaws.SDKGlobalConfiguration;
-import com.amazonaws.regions.Regions;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.jet.Job;
 import com.hazelcast.jet.config.JobConfig;
@@ -29,7 +28,9 @@ import com.hazelcast.jet.pipeline.Pipeline;
 import com.hazelcast.jet.pipeline.Sink;
 import com.hazelcast.jet.pipeline.SourceBuilder;
 import com.hazelcast.jet.pipeline.StreamSource;
-import com.hazelcast.jet.tests.common.AbstractSoakTest;
+import com.hazelcast.jet.tests.common.AbstractJetSoakTest;
+
+import com.hazelcast.shaded.com.amazonaws.regions.Regions;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ import static com.hazelcast.jet.tests.common.Util.sleepMinutes;
 import static com.hazelcast.jet.tests.common.Util.sleepSeconds;
 import static com.hazelcast.jet.tests.common.Util.waitForJobStatus;
 
-public class KinesisTest extends AbstractSoakTest {
+public class KinesisTest extends AbstractJetSoakTest {
 
     private static final int DEFAULT_SHARD_COUNT = 1;
     private static final int DEFAULT_PARTITION_KEYS = 10_000;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import com.hazelcast.jet.pipeline.Sinks;
 import com.hazelcast.jet.pipeline.Sources;
 import com.hazelcast.jet.python.PythonServiceConfig;
 import com.hazelcast.jet.python.PythonTransforms;
-import com.hazelcast.jet.tests.common.AbstractSoakTest;
+import com.hazelcast.jet.tests.common.AbstractJetSoakTest;
 import com.hazelcast.map.IMap;
 
 import java.io.ByteArrayInputStream;
@@ -43,7 +43,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 
-public class PythonTest extends AbstractSoakTest {
+public class PythonTest extends AbstractJetSoakTest {
 
     private static final String SOURCE_MAP_NAME = "pythonSourceMap";
     private static final String SINK_LIST_NAME = "pythonSinkList";

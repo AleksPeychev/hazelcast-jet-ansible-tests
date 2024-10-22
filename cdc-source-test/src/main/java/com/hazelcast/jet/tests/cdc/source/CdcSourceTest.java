@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ package com.hazelcast.jet.tests.cdc.source;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.jet.Job;
-import com.hazelcast.jet.cdc.ChangeRecord;
-import com.hazelcast.jet.cdc.Operation;
-import com.hazelcast.jet.cdc.RecordPart;
-import com.hazelcast.jet.cdc.mysql.MySqlCdcSources;
+import com.hazelcast.enterprise.jet.cdc.ChangeRecord;
+import com.hazelcast.enterprise.jet.cdc.Operation;
+import com.hazelcast.enterprise.jet.cdc.RecordPart;
+import com.hazelcast.enterprise.jet.cdc.mysql.MySqlCdcSources;
 import com.hazelcast.jet.config.JobConfig;
 import com.hazelcast.jet.config.ProcessingGuarantee;
 import com.hazelcast.jet.pipeline.Pipeline;
@@ -29,7 +29,7 @@ import com.hazelcast.jet.pipeline.Sink;
 import com.hazelcast.jet.pipeline.Sinks;
 import com.hazelcast.jet.pipeline.StreamSource;
 import com.hazelcast.jet.pipeline.StreamStage;
-import com.hazelcast.jet.tests.common.AbstractSoakTest;
+import com.hazelcast.jet.tests.common.AbstractJetSoakTest;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -45,7 +45,7 @@ import static com.hazelcast.jet.tests.common.Util.sleepMinutes;
 import static com.hazelcast.jet.tests.common.Util.sleepSeconds;
 import static com.hazelcast.jet.tests.common.Util.waitForJobStatus;
 
-public class CdcSourceTest extends AbstractSoakTest {
+public class CdcSourceTest extends AbstractJetSoakTest {
 
     public static final String TABLE_NAME = "CdcSourceTest";
     private static final String DATABASE_NAME = "cdc_source_test_db";
@@ -156,10 +156,10 @@ public class CdcSourceTest extends AbstractSoakTest {
                 .setDatabasePort(3306)
                 .setDatabaseUser("debezium")
                 .setDatabasePassword("Dbz,1234")
-                .setClusterName("dbserver1")
+                .setDatabaseName("cdc_source_test_db")
                 .setDatabaseClientId(clusterName.contains(STABLE_CLUSTER) ? 444444 : 555555)
-                .setDatabaseWhitelist(DATABASE_NAME)
-                .setTableWhitelist(DATABASE_NAME + "." + tableName)
+                .setSchemaIncludeList(DATABASE_NAME)
+                .setTableIncludeList(DATABASE_NAME + "." + tableName)
                 .build();
 
         Sink<Integer> insertSink = Sinks.fromProcessor("insertVerificationProcessor",
@@ -174,7 +174,10 @@ public class CdcSourceTest extends AbstractSoakTest {
                           .withNativeTimestamps(0)
                           .map(record -> {
                               RecordPart value = record.value();
-                              int id = (int) value.toMap().get("id");
+                              int id = -1;
+                              if (value != null && value.toMap().get("id") != null) {
+                                   id = (int) value.toMap().get("id");
+                              }
                               return entry(record.operation(), id);
                           });
 

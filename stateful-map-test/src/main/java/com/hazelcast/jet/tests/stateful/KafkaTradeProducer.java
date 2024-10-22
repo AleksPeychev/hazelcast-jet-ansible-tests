@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ import static java.util.concurrent.locks.LockSupport.parkNanos;
 public class KafkaTradeProducer implements AutoCloseable {
 
     private static final int PRODUCE_WAIT_TIMEOUT_MILLIS = 10_000;
+    private static final int MAX_WAIT_IN_FINISH_MS = 120_000;
 
     private final KafkaProducer<String, Long> producer;
     private final String topic;
@@ -128,7 +129,7 @@ public class KafkaTradeProducer implements AutoCloseable {
     public long finish() throws Exception {
         checkStatus();
         finished = true;
-        producerThread.join();
+        producerThread.join(MAX_WAIT_IN_FINISH_MS);
         checkStatus();
         return txId;
     }

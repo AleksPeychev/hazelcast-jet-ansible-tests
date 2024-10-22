@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import com.hazelcast.jet.pipeline.BatchSource;
 import com.hazelcast.jet.pipeline.Pipeline;
 import com.hazelcast.jet.pipeline.Sinks;
 import com.hazelcast.jet.pipeline.Sources;
-import com.hazelcast.jet.tests.common.AbstractSoakTest;
+import com.hazelcast.jet.tests.common.AbstractJetSoakTest;
 import com.hazelcast.projection.Projections;
 import com.hazelcast.query.Predicates;
 
@@ -41,7 +41,7 @@ import static com.hazelcast.jet.tests.common.Util.sleepMillis;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
-public class CooperativeMapCacheSourceTest extends AbstractSoakTest {
+public class CooperativeMapCacheSourceTest extends AbstractJetSoakTest {
 
     private static final String TEST_PREFIX = CooperativeMapCacheSourceTest.class.getSimpleName();
     private static final String SOURCE_MAP = TEST_PREFIX + "_SourceMap";

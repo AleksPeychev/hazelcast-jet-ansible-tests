@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import com.hazelcast.jet.Job;
 import com.hazelcast.jet.config.JobConfig;
 import com.hazelcast.jet.pipeline.Pipeline;
 import com.hazelcast.jet.pipeline.Sources;
-import com.hazelcast.jet.tests.common.AbstractSoakTest;
+import com.hazelcast.jet.tests.common.AbstractJetSoakTest;
 import com.hazelcast.jet.tests.common.BasicEventJournalProducer;
 
 import static com.hazelcast.function.ComparatorEx.comparing;
@@ -37,7 +37,7 @@ import static com.hazelcast.jet.pipeline.Sinks.fromProcessor;
 import static com.hazelcast.jet.tests.common.Util.getJobStatusWithRetry;
 import static com.hazelcast.jet.tests.common.Util.sleepMinutes;
 
-public class RollingAggregateTest extends AbstractSoakTest {
+public class RollingAggregateTest extends AbstractJetSoakTest {
 
     private static final String SOURCE = RollingAggregateTest.class.getSimpleName();
     private static final int DEFAULT_SNAPSHOT_INTERVAL = 5000;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.hazelcast.jet.tests.stateful;
 
 import com.hazelcast.internal.util.UuidUtil;
 import com.hazelcast.logging.ILogger;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -72,7 +73,7 @@ public class KafkaSinkVerifier {
         long lastInputTime = System.currentTimeMillis();
         while (!finished) {
             try {
-                ConsumerRecords<Long, Long> records = consumer.poll(POLL_TIMEOUT);
+                ConsumerRecords<Long, Long> records = consumer.poll(Duration.ofMillis(POLL_TIMEOUT));
                 for (ConsumerRecord<Long, Long> record : records) {
                     verificationQueue.add(record.key());
                     if (record.value() != 0) {

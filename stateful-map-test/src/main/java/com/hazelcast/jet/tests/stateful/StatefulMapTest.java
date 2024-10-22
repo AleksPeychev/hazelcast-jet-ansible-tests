@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@ import com.hazelcast.jet.kafka.KafkaSources;
 import com.hazelcast.jet.pipeline.Pipeline;
 import com.hazelcast.jet.pipeline.StreamSource;
 import com.hazelcast.jet.pipeline.StreamStage;
-import com.hazelcast.jet.tests.common.AbstractSoakTest;
+import com.hazelcast.jet.tests.common.AbstractJetSoakTest;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,7 +71,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  *     "emitted items count"/generatorBatchCount. This is checked at the end
  *     of the test.
  */
-public class StatefulMapTest extends AbstractSoakTest {
+public class StatefulMapTest extends AbstractJetSoakTest {
 
     static final long TIMED_OUT_CODE = -1;
     static final int WAIT_TX_TIMEOUT_FACTOR = 4;
@@ -170,7 +171,7 @@ public class StatefulMapTest extends AbstractSoakTest {
     }
 
     private long processTimeoutItems(String name, KafkaConsumer<Long, Long> txTimeoutConsumer) {
-        ConsumerRecords<Long, Long> records = txTimeoutConsumer.poll(POLL_TIMEOUT);
+        ConsumerRecords<Long, Long> records = txTimeoutConsumer.poll(Duration.ofMillis(POLL_TIMEOUT));
         for (ConsumerRecord<Long, Long> record : records) {
             if (record.value() != -1) {
                 throw new AssertionError(

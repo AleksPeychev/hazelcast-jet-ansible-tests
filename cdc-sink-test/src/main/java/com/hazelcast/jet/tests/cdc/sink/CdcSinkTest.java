@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,17 @@ package com.hazelcast.jet.tests.cdc.sink;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.jet.Job;
-import com.hazelcast.jet.cdc.CdcSinks;
-import com.hazelcast.jet.cdc.ChangeRecord;
-import com.hazelcast.jet.cdc.Operation;
-import com.hazelcast.jet.cdc.impl.ChangeRecordImpl;
+import com.hazelcast.enterprise.jet.cdc.CdcSinks;
+import com.hazelcast.enterprise.jet.cdc.ChangeRecord;
+import com.hazelcast.enterprise.jet.cdc.Operation;
+import com.hazelcast.enterprise.jet.cdc.impl.ChangeRecordImpl;
 import com.hazelcast.jet.config.JobConfig;
 import com.hazelcast.jet.config.ProcessingGuarantee;
 import com.hazelcast.jet.pipeline.Pipeline;
 import com.hazelcast.jet.pipeline.Sink;
 import com.hazelcast.jet.pipeline.SourceBuilder;
 import com.hazelcast.jet.pipeline.StreamSource;
-import com.hazelcast.jet.tests.common.AbstractSoakTest;
+import com.hazelcast.jet.tests.common.AbstractJetSoakTest;
 import com.hazelcast.map.IMap;
 import com.hazelcast.query.Predicate;
 import com.hazelcast.query.Predicates;
@@ -37,10 +37,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import static com.hazelcast.jet.cdc.Operation.DELETE;
-import static com.hazelcast.jet.cdc.Operation.INSERT;
-import static com.hazelcast.jet.cdc.Operation.SYNC;
-import static com.hazelcast.jet.cdc.Operation.UPDATE;
+import static com.hazelcast.enterprise.jet.cdc.Operation.DELETE;
+import static com.hazelcast.enterprise.jet.cdc.Operation.INSERT;
+import static com.hazelcast.enterprise.jet.cdc.Operation.SYNC;
+import static com.hazelcast.enterprise.jet.cdc.Operation.UPDATE;
 import static com.hazelcast.jet.core.JobStatus.FAILED;
 import static com.hazelcast.jet.core.JobStatus.RUNNING;
 import static com.hazelcast.jet.tests.common.Util.getJobStatusWithRetry;
@@ -49,7 +49,7 @@ import static com.hazelcast.jet.tests.common.Util.sleepMinutes;
 import static com.hazelcast.jet.tests.common.Util.sleepSeconds;
 import static com.hazelcast.jet.tests.common.Util.waitForJobStatus;
 
-public class CdcSinkTest extends AbstractSoakTest {
+public class CdcSinkTest extends AbstractJetSoakTest {
 
     public static final String SINK_MAP_NAME = "CdcSinkTestSinkMap";
     public static final String EXPECTED_VALUE_PATTERN = "name_%d_1_1";
@@ -244,6 +244,7 @@ public class CdcSinkTest extends AbstractSoakTest {
                 messageId,
                 op,
                 key,
+                () -> "notUsed",
                 oldValue,
                 newValue,
                 "table",

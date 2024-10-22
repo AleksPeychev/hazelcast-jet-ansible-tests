@@ -7,7 +7,7 @@
     <groupId>com.hazelcast.jet.tests</groupId>
     <artifactId>hazelcast-jet-ansible-tests</artifactId>
     <packaging>pom</packaging>
-    <version>5.5.0-SNAPSHOT</version>
+    <version>6.0.0-SNAPSHOT</version>
     <description>Soak Tests for Hazelcast Jet</description>
     <modules>
         <module>remote-controller-client</module>
@@ -17,13 +17,15 @@
 
     <properties>
         <jdk.version>17</jdk.version>
-        <hazelcast.version>5.5.0-SNAPSHOT</hazelcast.version>
+        <hazelcast.version>6.0.0-SNAPSHOT</hazelcast.version>
         <mysql.version>8.0.29</mysql.version>
 
         <mongodb.version>4.8.1</mongodb.version>
         <main.basedir>${project.basedir}</main.basedir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <hadoop.version>3.3.0</hadoop.version>
+
+        <hadoop.version>3.4.0</hadoop.version>
+        <aws.sdk2.version>2.26.15</aws.sdk2.version>
 
         <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
         <maven.compiler.plugin.version>2.5.1</maven.compiler.plugin.version>
@@ -158,6 +160,7 @@
                 <module>event-journal-test</module>
                 <module>generic-map-store-test</module>
                 <module>hdfs-test</module>
+                <module>isolated-jobs-test</module>
                 <module>jar-submission-module</module>
                 <module>jdbc-test</module>
                 <module>jms-test</module>
@@ -189,6 +192,18 @@
                 <module>sql-stream-to-stream-join-test</module>
                 <module>sql-stream-to-stream-fault-tolerance-test</module>
                 <module>sql-tumble-window-test</module>
+                <module>subset-routing-test</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>client</id>
+            <activation>
+                <property>
+                    <name>client</name>
+                </property>
+            </activation>
+            <modules>
+                <module>subset-routing-test</module>
             </modules>
         </profile>
         <profile>
@@ -211,6 +226,7 @@
                 <module>event-journal-test</module>
                 <module>generic-map-store-test</module>
                 <module>hdfs-test</module>
+                <module>isolated-jobs-test</module>
                 <module>jar-submission-module</module>
                 <module>jdbc-test</module>
                 <module>jms-test</module>
@@ -237,6 +253,9 @@
                 <module>grpc-test</module>
                 <module>sort-test</module>
                 <module>file-ingestion-test</module>
+
+                <!-- For now client tests are included in jet profile -->
+                <module>subset-routing-test</module>
             </modules>
         </profile>
         <profile>

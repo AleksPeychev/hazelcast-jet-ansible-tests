@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import com.hazelcast.jet.config.ProcessingGuarantee;
 import com.hazelcast.jet.kafka.KafkaSinks;
 import com.hazelcast.jet.kafka.KafkaSources;
 import com.hazelcast.jet.pipeline.Pipeline;
-import com.hazelcast.jet.tests.common.AbstractSoakTest;
+import com.hazelcast.jet.tests.common.AbstractJetSoakTest;
 import com.hazelcast.jet.tests.common.QueueVerifier;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.logging.LoggingService;
@@ -34,6 +34,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.LongSerializer;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -47,7 +48,7 @@ import static com.hazelcast.jet.config.ProcessingGuarantee.AT_LEAST_ONCE;
 import static com.hazelcast.jet.config.ProcessingGuarantee.EXACTLY_ONCE;
 import static com.hazelcast.jet.pipeline.WindowDefinition.sliding;
 
-public class SnapshotKafkaTest extends AbstractSoakTest {
+public class SnapshotKafkaTest extends AbstractJetSoakTest {
 
     private static final int DEFAULT_LAG = 3000;
     private static final int DEFAULT_SNAPSHOT_INTERVAL = 1000;
@@ -128,7 +129,7 @@ public class SnapshotKafkaTest extends AbstractSoakTest {
         try {
             long begin = System.currentTimeMillis();
             while (System.currentTimeMillis() - begin < durationInMillis) {
-                ConsumerRecords<Long, Long> records = consumer.poll(POLL_TIMEOUT);
+                ConsumerRecords<Long, Long> records = consumer.poll(Duration.ofMillis(POLL_TIMEOUT));
                 records.iterator().forEachRemaining(r -> {
                             String topic = r.topic();
                             if (topic.contains(AT_LEAST_ONCE.name())) {
@@ -144,8 +145,12 @@ public class SnapshotKafkaTest extends AbstractSoakTest {
                             }
                         }
                 );
+                assertTrue(atLeastOnceVerifier.isRunning());
+                assertTrue(exactlyOnceVerifier.isRunning());
                 assertFalse(producerFuture.isDone());
             }
+            assertTrue(atLeastOnceVerifier.processedAnything());
+            assertTrue(exactlyOnceVerifier.processedAnything());
         } finally {
             logger.info("[" + name + "] Cancelling jobs...");
             consumer.close();
