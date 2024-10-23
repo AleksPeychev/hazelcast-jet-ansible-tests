@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import com.hazelcast.jet.json.JsonUtil;
 import com.hazelcast.jet.kafka.connect.KafkaConnectSources;
 import com.hazelcast.jet.pipeline.Pipeline;
 import com.hazelcast.jet.pipeline.StreamSource;
-import com.hazelcast.jet.tests.common.AbstractSoakTest;
+import com.hazelcast.jet.tests.common.AbstractJetSoakTest;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.shaded.com.fasterxml.jackson.jr.ob.impl.DeferredMap;
 
@@ -56,7 +56,7 @@ import static com.hazelcast.jet.tests.common.Util.sleepMinutes;
 import static com.hazelcast.jet.tests.common.Util.sleepSeconds;
 
 public class CouchbaseLongStreamTest
-        extends AbstractSoakTest {
+        extends AbstractJetSoakTest {
     private static final int ASSERTION_RETRY_COUNT = 60;
     private static final int DEFAULT_SNAPSHOT_INTERVAL = 5000;
     private static final int DEFAULT_TIMEOUT_FOR_NO_DATA_PROCESSED_MIN = 5;

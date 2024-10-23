@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2024, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,8 @@ import com.hazelcast.jet.kafka.connect.KafkaConnectSources;
 import com.hazelcast.jet.pipeline.Pipeline;
 import com.hazelcast.jet.pipeline.Sinks;
 import com.hazelcast.jet.pipeline.StreamSource;
-import com.hazelcast.jet.tests.common.AbstractSoakTest;
+import com.hazelcast.jet.tests.common.AbstractJetSoakTest;
+
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -56,7 +57,7 @@ import static com.hazelcast.jet.tests.common.Util.sleepMillis;
 import static com.hazelcast.jet.tests.common.Util.sleepSeconds;
 
 public class CouchbaseTest
-        extends AbstractSoakTest {
+        extends AbstractJetSoakTest {
     private static final int DEFAULT_ITEM_COUNT = 10;
     private static final int LOG_JOB_COUNT_THRESHOLD = 50;
     private static final int SLEEP_BETWEEN_READS_SECONDS = 2;
